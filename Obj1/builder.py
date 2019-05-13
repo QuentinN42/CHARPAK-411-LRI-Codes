@@ -1,67 +1,18 @@
 # -*- coding: utf-8 -*-
-from matplotlib import pyplot as plt
-from keras.models import Sequential
 from keras import layers
 import numpy as np
+from useful import Network, Data
 
 
-def f(x):
-    return int(x*100)/100
+def generate() -> np.array:
+    return np.array([[i/100, j/100] for i in range(10) for j in range(10)])
 
 
-def shuffle(tab: np.array) -> np.array:
-    indices = np.arange(len(tab))
-    np.random.shuffle(indices)
-    return tab[indices]
+d = Data(generate(), sum)
 
+network = Network(d)
+network.model.add(layers.Dense(1, activation='linear', input_dim=2, use_bias=False))
+network.build()
 
-print('=' * 50)
-print('Generating data')
-
-
-x = np.array([[i/100, j/100] for i in range(10) for j in range(10)])
-x = shuffle(x)
-y = np.array(list(map(sum, x)))
-
-
-validation_length = 0.9
-split_at = int(validation_length * len(x))
-x_train, x_val = x[:split_at], x[split_at:]
-y_train, y_val = y[:split_at], y[split_at:]
-
-for i in range(len(y_val)):
-    print("{} -> {}".format(x_val[i], y_val[i]))
-
-print('=' * 50)
-print('Building network')
-
-
-model = Sequential()
-
-model.add(layers.Dense(1, activation='linear', input_dim=2, use_bias=False))
-model.compile(loss='sparse_categorical_crossentropy',
-              optimizer='adam',
-              metrics=['accuracy'])
-model.summary()
-model.fit(x_train, y_train, epochs=1, validation_data=(x_val, y_val))
-model.save_weights('weights.h5')
-
-r = [model.predict(np.array([e]))[0][0] for e in x]
-m = min(r)
-M = max(r)
-d = M - m
-r = [(e+abs(m))*max(y)/d for e in r]
-
-
-def add(a: float, b: float) -> float:
-    pred = model.predict(np.array([[a, b]]))[0][0]
-    return (pred+abs(m))*max(y)/d
-
-
-for i in range(len(y)):
-    print("{} - {}".format(f(y[i]), f(r[i])))
-
-plt.plot(sorted(r), '+k', label='values')
-plt.plot(sorted(y), '-r', label='expected')
-plt.legend()
-plt.show()
+network.train()
+network.graph()
