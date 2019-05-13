@@ -1,21 +1,8 @@
 # Stage LRI
-Integrales de choquet :
- - Data set :
-    * Public
-    * Entre 6 et 15 critères.
-    * Entre 200 et 1600 donnés
- - En python :
-    * Choquet de base
-    * Ctypes pour importer des fonctions en C
- - Le réseau :
-     * Vecteur X en entré
-     * Réseau de neurone -> dit si une le choix est "bon" ou pas.
-     * Extraction du réseau : les `ui` et les `wij` de par son architecture.
-     * Regression :
-        - testé avec des gaussiene
-        - testé avec des sigmoides
-     * Modele : trois sommes : \
-        `wi.ui + wMij.max(ui,uj) + wmij.min(ui,uj)`
-    * Probleme : \
-        - Regression : on ne sait pas combien en mettre
- 
+ - [Cahier de laboratoire](https://github.com/QuentinN42/Cahier_De_Laboratoire_LRI)
+ - [Rapport de stage](https://github.com/QuentinN42/Rapport_Stage_S4_Charpak)
+
+Premier objectif :
+ - Faire un reseau de neurones de la formule (1).
+ - Determiner les `wi`, `wmij`, `wMij` sur des données propres.
+ - Ajouter du random.
