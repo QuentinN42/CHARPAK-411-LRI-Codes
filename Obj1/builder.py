@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
+from matplotlib import pyplot as plt
 from keras.models import Sequential
 from keras import layers
 import numpy as np
+
+
+def f(x):
+    return int(x*100)/100
 
 
 def shuffle(tab: np.array) -> np.array:
@@ -41,10 +46,22 @@ model.summary()
 model.fit(x_train, y_train, epochs=1, validation_data=(x_val, y_val))
 model.save_weights('weights.h5')
 
-"""
-print('=' * 50)
-with open('weights.h5') as f:
-    print(f.read())
+r = [model.predict(np.array([e]))[0][0] for e in x]
+m = min(r)
+M = max(r)
+d = M - m
+r = [(e+abs(m))*max(y)/d for e in r]
 
-print('=' * 50)
-"""
+
+def add(a: float, b: float) -> float:
+    pred = model.predict(np.array([[a, b]]))[0][0]
+    return (pred+abs(m))*max(y)/d
+
+
+for i in range(len(y)):
+    print("{} - {}".format(f(y[i]), f(r[i])))
+
+plt.plot(sorted(r), '+k', label='values')
+plt.plot(sorted(y), '-r', label='expected')
+plt.legend()
+plt.show()
