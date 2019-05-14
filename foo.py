@@ -1,5 +1,15 @@
 import numpy as np
-from useful import plot_color as plot, moy, nmap, generate
+from useful import generate
+
+
+
+
+
+"""
+g = np.transpose(generate(2, 1, 3))
+for e in g:
+    print("|".join([str(int(x)).zfill(2) for x in e]))
+
 
 x = generate()
 print(x)
@@ -8,7 +18,6 @@ print(z)
 plot(z, x[:, 0])
 
 
-"""
 
 import numpy as np
 import matplotlib

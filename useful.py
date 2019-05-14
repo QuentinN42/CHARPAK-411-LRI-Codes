@@ -25,11 +25,11 @@ def shuffle(tab: np.array) -> np.array:
     return tab[indices]
 
 
-def generate(n: int = 100, div: int = 100) -> np.array:
+def generate(n: int = 100, div: int = 100, dim: int = 2) -> np.array:
     t = np.arange(n) / div
-    tab = np.concatenate((t-max(t), t))
-    print(min(tab), max(tab))
-    return np.transpose([np.tile(tab, len(tab)), np.repeat(tab, len(tab))])
+    tab = np.concatenate((t[:-1]-max(t), t))
+    to_transpose = [np.repeat(np.tile(tab, len(tab)**i), len(tab)**(dim-i-1)) for i in range(0, dim)]
+    return np.transpose(to_transpose)
 
 
 def moy(tab: np.array) -> float:
@@ -94,16 +94,28 @@ class Network:
     def build(self):
         sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
         self.model.compile(loss='mean_squared_error', optimizer=sgd, metrics=['accuracy'])
+
+        print("\n" * 5)
         self.model.summary()
 
-    def train(self, split_ratio: float = 0.8):
+    def train(self, split_ratio: float = 0.5, validate: bool = True):
         self.trained = True
         self.data.split(split_ratio)
-        self.model.fit(self.data.question.training,
-                       self.data.expected.training,
-                       epochs=1, validation_data=(
-                        self.data.question.testing,
-                        self.data.expected.testing))
+        print("\n" * 5)
+        print("Learning set : {} values".format(len(self.data.question.testing)))
+        print("Training set : {} values".format(len(self.data.question.training)))
+        print("\n"*5)
+        if validate:
+            self.model.fit(self.data.question.training,
+                           self.data.expected.training,
+                           epochs=1, validation_data=(
+                            self.data.question.testing,
+                            self.data.expected.testing))
+        else:
+            self.model.fit(self.data.question.training,
+                           self.data.expected.training,
+                           epochs=1)
+        print("\n"*5)
         print("="*20 + " Weights : " + "="*20)
         for wts in self.model.get_weights():
             print(" | ".join([str(w) for w in wts]))
