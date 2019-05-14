@@ -140,8 +140,11 @@ class Network:
         plt1 = plot_color(z_exp, x)
         z_val = np.split(nmap(self.predict, xy), len(x))
         plt2 = plot_color(z_val, x)
+
         if save_link is not "":
+            plt1.title("Expected")
             plt1.savefig(save_link + "/expected.png")
+            plt2.title("Learning return")
             plt2.savefig(save_link + "/result.png")
         else:
             plt1.show()
