@@ -228,3 +228,4 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 .idea/
+/foo.py
