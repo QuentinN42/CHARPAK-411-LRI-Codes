@@ -51,7 +51,6 @@ def plot_color(z: np.array, x: np.array = None, y: np.array = None, nb_ticks: in
         ax.set_yticks(ticks_pos_y)
         ax.set_xticklabels([x[i] for i in ticks_pos_x])
         ax.set_yticklabels([y[i] for i in ticks_pos_y])
-    plt.show()
     return plt
 
 
@@ -144,6 +143,9 @@ class Network:
         if save_link is not "":
             plt1.savefig(save_link + "/expected.png")
             plt2.savefig(save_link + "/result.png")
+        else:
+            plt1.show()
+            plt2.show()
 
     def graph3d(self):
         fig = plt.figure()
