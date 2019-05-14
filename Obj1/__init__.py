@@ -4,5 +4,5 @@ from useful import generate, Network, Data, moy
 
 def demo() -> Network:
     net = simple_network(Data(generate(), moy))
-    net.graph_color()
+    net.graph_color("data/moy")
     return net

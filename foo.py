@@ -1,4 +1,16 @@
 import numpy as np
+from useful import plot_color as plot, moy, nmap, generate
+
+x = generate()
+print(x)
+z = np.split(nmap(moy, x), len(x))
+print(z)
+plot(z, x[:, 0])
+
+
+"""
+
+import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 # sphinx_gallery_thumbnail_number = 2
@@ -25,8 +37,6 @@ ax.set_yticklabels(y)
 fig.tight_layout()
 plt.show()
 
-
-"""
 import matplotlib.pyplot as plt
 import numpy as np
 

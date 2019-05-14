@@ -6,6 +6,7 @@ Usefull thinks...
 """
 import numpy as np
 from keras.models import Sequential
+from keras import optimizers
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -35,7 +36,7 @@ def moy(tab: np.array) -> float:
     return sum(tab)/len(tab)
 
 
-def plot_color(z: np.array, x: np.array = None, y: np.array = None, nb_ticks: int = 5):
+def plot_color(z: np.array, x: np.array = None, y: np.array = None, nb_ticks: int = 5) -> plt:
     fig, ax = plt.subplots()
     im = ax.imshow(z)
     plt.plot([len(z)-.5, -.5], [-.5, len(z)-.5], '-k')
@@ -51,6 +52,7 @@ def plot_color(z: np.array, x: np.array = None, y: np.array = None, nb_ticks: in
         ax.set_xticklabels([x[i] for i in ticks_pos_x])
         ax.set_yticklabels([y[i] for i in ticks_pos_y])
     plt.show()
+    return plt
 
 
 class LearningData:
@@ -91,7 +93,8 @@ class Network:
         self.trained = False
 
     def build(self):
-        self.model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+        sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+        self.model.compile(loss='mean_squared_error', optimizer=sgd, metrics=['accuracy'])
         self.model.summary()
 
     def train(self, split_ratio: float = 0.8):
@@ -127,23 +130,20 @@ class Network:
         plt.legend()
         plt.show()
 
-    def graph_color(self, debug: bool = False):
+    def graph_color(self, save_link: str = ""):
         #  x = np.array(sorted(self.data.raw_data, key=self.data.func))[:, 0]
         #  y = np.array(sorted(self.data.raw_data, key=self.data.func))[:, 1]
         t = np.arange(20)/200
         x = np.concatenate((t-max(t), t))
-        z_exp = np.split(nmap(self.data.func, np.transpose([np.tile(x, len(x)), np.repeat(x, len(x))])), len(x))
+        xy = np.transpose([np.tile(x, len(x)), np.repeat(x, len(x))])
+        z_exp = np.split(nmap(self.data.func, xy), len(x))
 
-        if debug:
-            for i in range(len(x)):
-                for j in range(len(x)):
-                    print('{} + {} = {}'.format(x[i], y[j], z_exp[i][j]))
-
-        plot_color(z_exp, x)
-
-        z_val = [[self.predict([_y, _x]) for _y in x] for _x in x]
-
-        plot_color(z_val, x)
+        plt1 = plot_color(z_exp, x)
+        z_val = np.split(nmap(self.predict, xy), len(x))
+        plt2 = plot_color(z_val, x)
+        if save_link is not "":
+            plt1.savefig(save_link + "/expected.png")
+            plt2.savefig(save_link + "/result.png")
 
     def graph3d(self):
         fig = plt.figure()
