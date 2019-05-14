@@ -98,27 +98,48 @@ class Network:
         print("\n" * 5)
         self.model.summary()
 
-    def train(self, split_ratio: float = 0.5, validate: bool = True):
+    def train(self, split_ratio: float = 0.5, validate: bool = True, plot_history: tuple = (False, False)):
         self.trained = True
         self.data.split(split_ratio)
         print("\n" * 5)
-        print("Learning set : {} values".format(len(self.data.question.testing)))
-        print("Training set : {} values".format(len(self.data.question.training)))
+        print("Learning set : {} values".format(len(self.data.question.training)))
+        print("Training set : {} values".format(len(self.data.question.testing)))
         print("\n"*5)
-        if validate:
-            self.model.fit(self.data.question.training,
-                           self.data.expected.training,
-                           epochs=1, validation_data=(
-                            self.data.question.testing,
-                            self.data.expected.testing))
+        if validate:  # TODO : Show more at https://keras.io/visualization/
+            history = self.model.fit(self.data.question.training,
+                                     self.data.expected.training,
+                                     epochs=50,
+                                     validation_data=(
+                                         self.data.question.testing,
+                                         self.data.expected.testing))
         else:
-            self.model.fit(self.data.question.training,
-                           self.data.expected.training,
-                           epochs=1)
+            history = self.model.fit(self.data.question.training,
+                                     self.data.expected.training,
+                                     epochs=50)
         print("\n"*5)
         print("="*20 + " Weights : " + "="*20)
         for wts in self.model.get_weights():
             print(" | ".join([str(w) for w in wts]))
+        if plot_history[0]:
+            # Plot training & validation accuracy values
+            plt.plot(history.history['acc'], label='Train')
+            if validate:
+                plt.plot(history.history['val_acc'], label='Test')
+            plt.title('Model accuracy')
+            plt.ylabel('Accuracy')
+            plt.xlabel('Epoch')
+            plt.legend(loc='upper left')
+            plt.show()
+        if plot_history[1]:
+            # Plot training & validation loss values
+            plt.plot(history.history['loss'], label='Train')
+            if validate:
+                plt.plot(history.history['val_loss'], label='Test')
+            plt.title('Model loss')
+            plt.ylabel('Loss')
+            plt.xlabel('Epoch')
+            plt.legend(loc='upper left')
+            plt.show()
 
     @property
     def predictions(self):
