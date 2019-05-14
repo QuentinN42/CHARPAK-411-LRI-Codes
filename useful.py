@@ -143,8 +143,10 @@ class Network:
 
         if save_link is not "":
             plt1.title("Expected")
+            plt1.tight_layout()
             plt1.savefig(save_link + "/expected.png")
             plt2.title("Learning return")
+            plt2.tight_layout()
             plt2.savefig(save_link + "/result.png")
         else:
             plt1.show()
