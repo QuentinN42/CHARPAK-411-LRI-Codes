@@ -10,6 +10,10 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
+def nmap(func, l):
+    return np.array(list(map(func, l)))
+
+
 def f(e):
     return int(e*100)/100
 
@@ -20,12 +24,33 @@ def shuffle(tab: np.array) -> np.array:
     return tab[indices]
 
 
-def generate(n: int = 10, div: int = 100) -> np.array:
-    return np.array([[i/div, j/div] for i in range(n) for j in range(n)])
+def generate(n: int = 100, div: int = 100) -> np.array:
+    t = np.arange(n) / div
+    tab = np.concatenate((t-max(t), t))
+    print(min(tab), max(tab))
+    return np.transpose([np.tile(tab, len(tab)), np.repeat(tab, len(tab))])
 
 
 def moy(tab: np.array) -> float:
     return sum(tab)/len(tab)
+
+
+def plot_color(z: np.array, x: np.array = None, y: np.array = None, nb_ticks: int = 5):
+    fig, ax = plt.subplots()
+    im = ax.imshow(z)
+    plt.plot([len(z)-.5, -.5], [-.5, len(z)-.5], '-k')
+    fig.tight_layout()
+    plt.colorbar(im)
+    if x is not None:
+        if y is None:
+            y = x
+        ticks_pos_x = nmap(int, np.arange(nb_ticks)*(len(x)-1)/(nb_ticks-1))
+        ticks_pos_y = nmap(int, np.arange(nb_ticks) * (len(y) - 1) / (nb_ticks - 1))
+        ax.set_xticks(ticks_pos_x)
+        ax.set_yticks(ticks_pos_y)
+        ax.set_xticklabels([x[i] for i in ticks_pos_x])
+        ax.set_yticklabels([y[i] for i in ticks_pos_y])
+    plt.show()
 
 
 class LearningData:
@@ -69,7 +94,7 @@ class Network:
         self.model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         self.model.summary()
 
-    def train(self, split_ratio: float = 0.5):
+    def train(self, split_ratio: float = 0.8):
         self.trained = True
         self.data.split(split_ratio)
         self.model.fit(self.data.question.training,
@@ -90,16 +115,8 @@ class Network:
             self.train()
         return self.model.predict(np.array([inp]))[0][0]
 
-    def normalize(self, val: float) -> float:
-        r = self.predictions
-        return (val+abs(min(r)))*max(self.data.expected.data)/(max(r) - min(r))
-
-    @property
-    def normalized_predictions(self):
-        return [self.normalize(e) for e in self.predictions]
-
     def __call__(self, inp):
-        return self.normalize(self.predict(inp))
+        return self.predict(inp)
 
     def graph(self):
         exp = sorted(self.data.expected.data)
@@ -113,28 +130,20 @@ class Network:
     def graph_color(self, debug: bool = False):
         #  x = np.array(sorted(self.data.raw_data, key=self.data.func))[:, 0]
         #  y = np.array(sorted(self.data.raw_data, key=self.data.func))[:, 1]
-        x = np.arange(20)/200
-        y = np.arange(20)/200
-        z_exp = [[self.data.func([_y, _x]) for _y in y] for _x in x]
+        t = np.arange(20)/200
+        x = np.concatenate((t-max(t), t))
+        z_exp = np.split(nmap(self.data.func, np.transpose([np.tile(x, len(x)), np.repeat(x, len(x))])), len(x))
 
         if debug:
             for i in range(len(x)):
-                for j in range(len(y)):
+                for j in range(len(x)):
                     print('{} + {} = {}'.format(x[i], y[j], z_exp[i][j]))
 
-        fig, ax = plt.subplots()
-        im = ax.imshow(z_exp)
-        fig.tight_layout()
-        plt.colorbar(im)
-        plt.show()
+        plot_color(z_exp, x)
 
-        z_val = [[self.predict([_y, _x]) for _y in y] for _x in x]
+        z_val = [[self.predict([_y, _x]) for _y in x] for _x in x]
 
-        fig, ax = plt.subplots()
-        im = ax.imshow(z_val)
-        fig.tight_layout()
-        plt.colorbar(im)
-        plt.show()
+        plot_color(z_val, x)
 
     def graph3d(self):
         fig = plt.figure()

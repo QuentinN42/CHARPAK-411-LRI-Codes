@@ -3,6 +3,6 @@ from useful import generate, Network, Data, moy
 
 
 def demo() -> Network:
-    net = simple_network(Data(generate(), sum))
+    net = simple_network(Data(generate(), moy))
     net.graph_color()
     return net

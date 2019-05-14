@@ -8,7 +8,7 @@ def run(d: Data) -> Network:
     network.model.add(layers.Dense(1, activation='linear', input_dim=2, use_bias=False))
     network.build()
 
-    network.train()
+    network.train(1)
 
     return network
 
