@@ -36,7 +36,6 @@ class Network:
               ) -> None:
         """
         Split data, train the model, print weights, and graph the learning
-        TODO : Show more at https://keras.io/visualization/
         :param split_ratio:
         :param validate: use validation set ?
         :param plot_history: plot accuracy and loss ?
