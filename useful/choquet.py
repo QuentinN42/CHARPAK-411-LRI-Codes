@@ -16,44 +16,22 @@ class Choquet:
                  w: np.array,
                  w_min: np.array,
                  w_max: np.array):
-        if not same_len([w, w_min, w_max]):
-            raise AttributeError('Vectors must have the same length')
-        else:
-            self.dim = len(w)
-            self.w = w
-            self.w_m = w_min
-            self.w_M = w_max
+        self.dim = len(w)
+        self.w = w
+        self.w_m = w_min
+        self.w_M = w_max
 
     def __call__(self, x: np.array) -> float:
-        x_m = nmap(min, two_by_two(x))
-        x_M = nmap(max, two_by_two(x))
-        return self.w @ x + self.w_M @ x_M + self.w_m @ x_m
-
-
-class ChoquetData(Data):
-    def __init__(self, tab: np.array = None, func: Choquet = None, expected: np.array = None):
-        if not tab:
-            if func:
-                tab = generate(dim=func.dim)
-            else:
-                raise AttributeError("Can't extract dimension")
-        if func:
-            super().__init__(tab, func)
-        elif expected:
-            def _func(inp):
-                if inp in expected:
-                    return expected[inp]
-                else:
-                    return 0
-            super().__init__(tab, _func)
-        else:
-            raise AttributeError('func or awnsers needed')
+        x_m = nmap(min, two_by_two(x, True))
+        x_M = nmap(max, two_by_two(x, True))
+        r = (self.w @ x) + (self.w_M @ x_M) + (self.w_m @ x_m)
+        return r
 
 
 class ChoquetNetwork(SimpleNetwork):
     def __init__(self,
                  # Data initialisation
-                 data: ChoquetData,
+                 data: Data,
 
                  # Layer options
                  use_bias: bool = False,
@@ -67,12 +45,13 @@ class ChoquetNetwork(SimpleNetwork):
 
 
 def demo():
-    v1 = np.array([0.5, 5, 10])
-    v2 = np.array([1, 5, 2])
-    v3 = np.array([0.2, 0.1, 0.1])
+    v1 = np.array([0.5, 5, 15])
+    v2 = np.array([1, 5, 2, 5, 2, 3])
+    v3 = np.array([0.2, 0.1, 15, 5, 2, 3])
     ch = Choquet(v1, v2, v3)
-    chd = ChoquetData(func=ch)
+    chd = Data(func=ch)
     net = ChoquetNetwork(chd)
+    return net
 
 
 if __name__ == '__main__':
