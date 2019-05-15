@@ -36,6 +36,16 @@ def two_by_two(vector: np.array) -> np.array:
     return np.transpose([np.tile(vector, len(vector)), np.repeat(vector, len(vector))])
 
 
+def same_len(vectors: list) -> bool:
+    """
+    have all vectors the same length ?
+    :param vectors: a list of Sized
+    :return: if all vectors have the same length
+    """
+    lengths = map(len, vectors)
+    return min(lengths) == max(lengths)
+
+
 def f(e) -> str:
     """
     format 0.15424548 in to 0.15
