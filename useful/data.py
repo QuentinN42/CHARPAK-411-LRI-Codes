@@ -36,7 +36,7 @@ class _LearningData:
 class Data:
     def __init__(self, tab: np.array = None, func: callable = None, expected: np.array = None, debug: bool = False):
         if func:
-            if tab is not None:
+            if tab is None:
                 if 'dim' in func.__dict__.keys():
                     tab = generate(dim=func.dim)
                 else:
