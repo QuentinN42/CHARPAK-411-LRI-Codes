@@ -42,7 +42,7 @@ def same_len(vectors: list) -> bool:
     :param vectors: a list of Sized
     :return: if all vectors have the same length
     """
-    lengths = map(len, vectors)
+    lengths = list(map(len, vectors))
     return min(lengths) == max(lengths)
 
 
