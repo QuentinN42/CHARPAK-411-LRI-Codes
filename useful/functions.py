@@ -32,6 +32,10 @@ def nmap(func: callable, l) -> np.array:
     return np.array(list(map(func, l)))
 
 
+def two_by_two(vector: np.array) -> np.array:
+    return np.transpose([np.tile(vector, len(vector)), np.repeat(vector, len(vector))])
+
+
 def f(e) -> str:
     """
     format 0.15424548 in to 0.15
