@@ -6,3 +6,7 @@ Premier objectif :
  - Faire un reseau de neurones de la formule (1).
  - Determiner les `wi`, `wmij`, `wMij` sur des données propres.
  - Ajouter du random.
+
+Possible erreur:
+ - ne pas decouper les donner random : \
+    meusure mal la capacité a généraliser
