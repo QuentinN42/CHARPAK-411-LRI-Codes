@@ -46,10 +46,10 @@ class SimpleNetwork(Network):
                 raise AttributeError('Data generation need function')
         super().__init__(data)
         self.model.add(layers.Dense(1, activation=activation, input_dim=self.n_dim, use_bias=use_bias))
-        super().build()
+        self.build()
         self.train(split_ratio, validate, plot_history, plot_acc, plot_loss, save_link)
 
 
 if __name__ == '__main__':
     net = SimpleNetwork(func=sum)
-    print(net)
+    net.graph_color()

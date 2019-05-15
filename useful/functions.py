@@ -15,9 +15,9 @@ def title(t: str):
 
 
 def white_space(func):
-    def inner():
+    def inner(*args, **kwargs):
         print("\n" * 5)
-        func()
+        func(*args, **kwargs)
         print("\n" * 5)
     return inner
 

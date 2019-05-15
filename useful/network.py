@@ -16,6 +16,8 @@ class Network:
         self.model = Sequential()
         self.data = data
         self.trained = False
+        self.history = {}
+        self.validation_set = True
 
     @white_space
     def build(self):
@@ -43,12 +45,13 @@ class Network:
         :param save_link: save the plots ?
         """
         self.trained = True
+        self.validation_set = validate
         self.data.split(split_ratio)
 
         print("Learning set : {} values".format(len(self.data.question.training)))
         print("Training set : {} values".format(len(self.data.question.testing)))
 
-        if validate:
+        if self.validation_set:
             history = self.model.fit(self.data.question.training,
                                      self.data.expected.training,
                                      epochs=50,
@@ -59,19 +62,18 @@ class Network:
             history = self.model.fit(self.data.question.training,
                                      self.data.expected.training,
                                      epochs=50)
+        self.history = history.history
         title(" Weights : ")
         for wts in self.model.get_weights():
             print(" | ".join([str(w) for w in wts]))
 
         if plot_history or plot_acc:
-            plt = history_plot(history.history, 'acc', validate)
-            plt.show()
+            self.graph_history('acc')
         if plot_history or plot_loss:
-            plt = history_plot(history.history, 'loss', validate)
-            plt.show()
+            self.graph_history('loss')
         if save_link:
-            history_plot(history.history, 'acc', validate).savefig(save_link + "/acc.png")
-            history_plot(history.history, 'loss', validate).savefig(save_link + "/loss.png")
+            self.graph_history('acc', save_link)
+            self.graph_history('loss', save_link)
 
     @property
     def predictions(self):
@@ -121,3 +123,14 @@ class Network:
             plt.savefig(save_link + "/3D_plot.png")
         else:
             plt.show()
+
+    def graph_history(self, key: str, save_link: str = "") -> None:
+        """
+        plot the learning history
+        """
+        if self.history:
+            plt = history_plot(self.history, key, self.validation_set)
+            if save_link:
+                plt.savefig(save_link + "/" + key + ".png")
+            else:
+                plt.show()
