@@ -14,7 +14,7 @@ def _nmap_with_print(f: callable, t: np.array):
     out = np.array([])
     title(" Generation of {} data... ".format(length))
     for i in range(length):
-        np.append(out, f(t[i]))
+        out = np.append(out, f(t[i]))
         if i in print_list:
             print("Building data : {}%".format(str(int(i*100/length)).zfill(2)))
     return out
