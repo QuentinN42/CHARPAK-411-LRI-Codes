@@ -47,17 +47,13 @@ def nmap(func: callable, l) -> np.array:
     return np.array(list(map(func, l)))
 
 
-def remove_duplicate(vector: np.array) -> np.array:
+def two_by_two(vector: np.array, func: callable) -> np.array:
+    out = np.array([])
     length = len(vector)
-    return vector[np.delete(np.arange(length), np.arange(0, length, sqrt(length)+1))]
-
-
-def two_by_two(vector: np.array, rm_dupli: bool = False) -> np.array:
-    trans = np.transpose([np.tile(vector, len(vector)), np.repeat(vector, len(vector))])
-    if rm_dupli:
-        return remove_duplicate(trans)
-    else:
-        return trans
+    for i in range(length):
+        for j in range(i+1, length):
+            out = np.append(out, func(vector[[i, j]]))
+    return out
 
 
 def same_len(vectors: list) -> bool:
