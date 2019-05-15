@@ -22,8 +22,8 @@ class Choquet:
         self.w_M = w_max
 
     def __call__(self, x: np.array) -> float:
-        x_m = nmap(min, two_by_two(x, True))
-        x_M = nmap(max, two_by_two(x, True))
+        x_m = two_by_two(x, min)
+        x_M = two_by_two(x, max)
         r = (self.w @ x) + (self.w_M @ x_M) + (self.w_m @ x_m)
         return r
 
