@@ -28,11 +28,7 @@ class SimpleNetwork(Network):
                  
                  # Training options
                  split_ratio: float = 0.5,
-                 validate: bool = True,
-                 plot_history: bool = False,
-                 plot_acc: bool = False,
-                 plot_loss: bool = False,
-                 save_link: str = ""
+                 validate: bool = True
                  ):
         self.n_dim = n_dim
         if func:
@@ -47,7 +43,7 @@ class SimpleNetwork(Network):
         super().__init__(data)
         self.model.add(layers.Dense(1, activation=activation, input_dim=self.n_dim, use_bias=use_bias))
         self.build()
-        self.train(split_ratio, validate, plot_history, plot_acc, plot_loss, save_link)
+        self.train(split_ratio, validate)
 
 
 if __name__ == '__main__':
