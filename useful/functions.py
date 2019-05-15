@@ -7,6 +7,7 @@ Usefull functions
 import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from math import sqrt
 
 
 def title(t: str):
@@ -32,8 +33,17 @@ def nmap(func: callable, l) -> np.array:
     return np.array(list(map(func, l)))
 
 
-def two_by_two(vector: np.array) -> np.array:
-    return np.transpose([np.tile(vector, len(vector)), np.repeat(vector, len(vector))])
+def remove_duplicate(vector: np.array) -> np.array:
+    length = len(vector)
+    return vector[np.delete(np.arange(length), np.arange(0, length, sqrt(length)+1))]
+
+
+def two_by_two(vector: np.array, rm_dupli: bool = False) -> np.array:
+    trans = np.transpose([np.tile(vector, len(vector)), np.repeat(vector, len(vector))])
+    if rm_dupli:
+        return remove_duplicate(trans)
+    else:
+        return trans
 
 
 def same_len(vectors: list) -> bool:
