@@ -8,6 +8,20 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from math import sqrt
+import json
+
+
+# JSON parser
+
+def get_json(link: str) -> dict:
+    return json.load(open(link, 'r'))
+
+
+def write_json(link: str, data) -> None:
+    _json = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
+    with open(link, 'w') as f:
+        for l in _json.split('\n'):
+            f.write(l)
 
 
 def title(t: str):
@@ -56,7 +70,7 @@ def same_len(vectors: list) -> bool:
     return min(lengths) == max(lengths)
 
 
-def f(e) -> str:
+def readable(e) -> str:
     """
     format 0.15424548 in to 0.15
     :return: readable number
