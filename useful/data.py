@@ -37,3 +37,7 @@ class Data:
         split_at = int(learning_set_ratio * len(self))
         self.question.split(split_at)
         self.expected.split(split_at)
+
+    @property
+    def n_dim(self):
+        return len(self.raw_data[0])
