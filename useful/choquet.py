@@ -52,7 +52,3 @@ def demo():
     chd = Data(func=ch)
     net = ChoquetNetwork(chd)
     return net
-
-
-if __name__ == '__main__':
-    demo()
