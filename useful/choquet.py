@@ -39,3 +39,23 @@ class ChoquetData(Data):
             super().__init__(tab, _func)
         else:
             raise AttributeError('func or awnsers needed')
+
+
+class ChoquetNetwork(SimpleNetwork):
+    def __init__(self,
+                 # Data initialisation
+                 data: ChoquetData,
+
+                 # Layer options
+                 use_bias: bool = False,
+                 activation: str = 'linear',
+
+                 # Training options
+                 split_ratio: float = 0.5,
+                 validate: bool = True,
+                 plot_history: bool = False,
+                 plot_acc: bool = False,
+                 plot_loss: bool = False,
+                 save_link: str = ""
+                 ):
+        super().__init__(data, data.func, data.n_dim, use_bias, activation, split_ratio, validate, plot_history, plot_acc, plot_loss, save_link)
