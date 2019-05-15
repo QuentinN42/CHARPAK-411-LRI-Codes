@@ -1,6 +1,4 @@
 import numpy as np
-from useful import generate
-
 
 
 
@@ -13,7 +11,7 @@ for e in g:
 
 x = generate()
 print(x)
-z = np.split(nmap(moy, x), len(x))
+z = np.split(nmap(average, x), len(x))
 print(z)
 plot(z, x[:, 0])
 
