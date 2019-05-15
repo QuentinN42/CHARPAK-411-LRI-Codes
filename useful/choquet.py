@@ -66,10 +66,14 @@ class ChoquetNetwork(SimpleNetwork):
         super().__init__(data, data.func, data.n_dim, use_bias, activation, split_ratio, validate)
 
 
-if __name__ == '__main__':
+def demo():
     v1 = np.array([0.5, 5, 10])
     v2 = np.array([1, 5, 2])
     v3 = np.array([0.2, 0.1, 0.1])
     ch = Choquet(v1, v2, v3)
     chd = ChoquetData(func=ch)
     net = ChoquetNetwork(chd)
+
+
+if __name__ == '__main__':
+    demo()
