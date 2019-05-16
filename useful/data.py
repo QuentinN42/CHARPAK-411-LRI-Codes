@@ -45,9 +45,9 @@ class Data:
             self.raw_data = tab
             self.question = _LearningData(self.raw_data)
             if debug:
-                self.expected = _LearningData(_nmap_with_print(self.func, self.question.data))
+                self.expected = _LearningData(_nmap_with_print(self.func, self.question_data))
             else:
-                self.expected = _LearningData(nmap(self.func, self.question.data))
+                self.expected = _LearningData(nmap(self.func, self.question_data))
         elif expected is not None:
             self.raw_data = tab
             self.question = _LearningData(self.raw_data)
@@ -64,7 +64,7 @@ class Data:
         self.expected.split(split_at)
 
     def save(self, file_name: str) -> None:
-        write_json(file_name, {"question": self.question.data.tolist(), "expected": self.expected.data.tolist()})
+        write_json(file_name, {"question": self.question_data.tolist(), "expected": self.expected_data.tolist()})
 
     @property
     def n_dim(self):
@@ -77,6 +77,14 @@ class Data:
     @property
     def expected_training(self):
         return self.expected.training
+
+    @property
+    def question_data(self):
+        return self.question.data
+
+    @property
+    def expected_data(self):
+        return self.expected.data
 
     @property
     def question_testing(self):

@@ -76,7 +76,7 @@ class Network:
 
     @property
     def predictions(self):
-        return [self.predict(e) for e in self.data.question.data]
+        return [self.predict(e) for e in self.data.question_data]
 
     def predict(self, inp):
         if self.trained is False:
@@ -112,10 +112,10 @@ class Network:
         plot expected and result value over 2 axis
         :param save_link: if you want to save the plot
         """
-        x = self.data.question.data[:, 0]
-        y = self.data.question.data[:, 1]
-        z_exp = self.data.expected.data
-        z_val = [self(val) for val in self.data.question.data]
+        x = self.data.question_data[:, 0]
+        y = self.data.question_data[:, 1]
+        z_exp = self.data.expected_data
+        z_val = [self(val) for val in self.data.question_data]
 
         plt = plot_3d(x, y, z_exp, z_val)
         if save_link is not "":
