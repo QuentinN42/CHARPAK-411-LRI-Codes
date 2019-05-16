@@ -62,9 +62,7 @@ class Network:
                                      self.data.expected_training,
                                      epochs=50)
         self.history = history.history
-        title(" Weights : ")
-        for wts in self.model.get_weights():
-            print(" | ".join([str(w) for w in wts]))
+        self.print_weights()
 
         if plot_history or plot_acc:
             self.graph_history('acc')
@@ -73,6 +71,11 @@ class Network:
         if save_link:
             self.graph_history('acc', save_link)
             self.graph_history('loss', save_link)
+
+    def print_weights(self):
+        title(" Weights : ")
+        for w in self.model.get_weights()[0]:
+            print("->", w[0])
 
     @property
     def predictions(self):
