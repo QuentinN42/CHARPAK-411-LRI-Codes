@@ -53,14 +53,14 @@ class Network:
         if self.validation_set:
             history = self.model.fit(self.data.question_training,
                                      self.data.expected_training,
-                                     epochs=50,
+                                     epochs=10,
                                      validation_data=(
                                          self.data.question_testing,
                                          self.data.expected_testing))
         else:
             history = self.model.fit(self.data.question_training,
                                      self.data.expected_training,
-                                     epochs=50)
+                                     epochs=10)
         self.history = history.history
         self.print_weights()
 
@@ -72,10 +72,14 @@ class Network:
             self.graph_history('acc', save_link)
             self.graph_history('loss', save_link)
 
+    @property
+    def weights(self) -> np.array:
+        return nmap(np.array, self.model.get_weights())
+
     def print_weights(self):
         title(" Weights : ")
-        for w in self.model.get_weights()[0]:
-            print("->", w[0])
+        for w in self.weights:
+            print("->", w)
 
     @property
     def predictions(self):

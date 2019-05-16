@@ -6,8 +6,9 @@ A simple Dense network.
 """
 from useful.network import Network
 from useful.data import Data
-from useful.functions import generate
+from useful.functions import generate, title
 from keras import layers, constraints
+import numpy as np
 
 
 class SimpleNetwork(Network):
@@ -55,6 +56,15 @@ class SimpleNetwork(Network):
         else:
             self.build()
         self.train(split_ratio, validate)
+
+    @property
+    def weights(self) -> np.array:
+        return np.array([w[0] for w in self.model.get_weights()[0]])
+
+    def print_weights(self):
+        title(" Weights : ")
+        for w in self.weights:
+            print("->", w)
 
 
 if __name__ == '__main__':
