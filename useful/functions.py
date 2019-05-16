@@ -11,8 +11,6 @@ from math import sqrt
 import json
 
 
-# JSON parser
-
 def get_json(link: str) -> dict:
     return json.load(open(link, 'r'))
 
@@ -72,6 +70,13 @@ def readable(e) -> str:
     :return: readable number
     """
     return str(int(e*100)/100)
+
+
+def is_negative(n) -> int:
+    if n < 0:
+        return 1
+    else:
+        return 0
 
 
 def shuffle(tab: np.array) -> np.array:
