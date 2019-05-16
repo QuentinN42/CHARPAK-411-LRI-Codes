@@ -8,7 +8,7 @@ Define a network that can regress a choquet function.
 import math
 from useful.simpleNetwork import SimpleNetwork
 import numpy as np
-from useful.functions import nmap, two_by_two
+from useful.functions import nmap, two_by_two, is_negative
 from useful.data import Data
 
 
@@ -115,8 +115,11 @@ class ChoquetNetwork(SimpleNetwork):
                  split_ratio: float = 0.5,
                  validate: bool = True
                  ):
-        super().__init__(data, n_dim=data.n_dim, use_bias=use_bias,
-                         activation=activation, split_ratio=split_ratio, validate=validate)
+        def loss(exp, ret):
+            return (exp - ret)**2 + (1 - sum([w[0] for w in self.model.get_weights()[0]]))**2
+        super().__init__(data, n_dim=data.n_dim,
+                         use_bias=use_bias, activation=activation, allow_neg=False,
+                         split_ratio=split_ratio, loss_func=loss, validate=validate)
 
 
 def demo():
@@ -125,5 +128,9 @@ def demo():
     v3 = np.array([0.2])
     ch = Choquet(v1, v2, v3)
     chd = ChoquetData(func=ch, debug=True)
-    net = ChoquetNetwork(chd)
-    return net
+    return ChoquetNetwork(chd)
+
+
+if __name__ == '__main__':
+    net = demo()
+    net.graph_history('loss')
