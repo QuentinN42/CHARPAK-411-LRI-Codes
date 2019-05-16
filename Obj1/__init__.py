@@ -12,7 +12,7 @@ real_W = np.array([0.5, 0.25, 0.1, 0.15])
 
 
 def loss(self: ChoquetNetwork, exp: float, ret: float) -> float:
-    return abs(exp - ret) + sum(self.weights)
+    return abs(exp - ret) + abs(1 - sum(self.weights))
 
 
 def test_loss(loss_f: callable):
