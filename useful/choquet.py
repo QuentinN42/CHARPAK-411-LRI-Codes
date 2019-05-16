@@ -5,6 +5,7 @@ Define a network that can regress a choquet function.
 @date: 15/05/2019
 @author: Quentin Lieumont
 """
+import math
 from useful.simpleNetwork import SimpleNetwork
 import numpy as np
 from useful.functions import nmap, two_by_two, generate, same_len
@@ -18,26 +19,80 @@ class Choquet:
                  w: np.array,
                  w_min: np.array,
                  w_max: np.array):
-        self.dim = len(w)
-        self.w = w
-        self.w_m = w_min
-        self.w_M = w_max
+        if len(w_min) == len(w_max) == (len(w)*(len(w)-1))/2:
+            self.dim = len(w)**2
+            self.w = w
+            self.w_m = w_min
+            self.w_M = w_max
+        else:
+            raise AttributeError('Length not match')
+
+    @property
+    def W(self):
+        return np.concatenate((self.w, self.w_m, self.w_M))
+
+    @staticmethod
+    def pre_call(x) -> np.ndarray:
+        return np.concatenate((x, two_by_two(x, min), two_by_two(x, max)))
 
     def __call__(self, x: np.array) -> float:
-        x_m = two_by_two(x, min)
-        x_M = two_by_two(x, max)
-        r = (self.w @ x) + (self.w_M @ x_M) + (self.w_m @ x_m)
-        return r
+        return Choquet.pre_call(x) @ self.W
+
+
+def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False) -> dict:
+    """
+    Generate n vectors input and expected by the ch function
+    :param ch: Choquet function
+    :param n: number of vectors
+    :param debug: See function work progress
+    :return: dict : {"expected": [...], "question": [...]}
+    """
+    que = []
+    exp = []
+    print_index = nmap(int, np.arange(100)*n/100)
+    for i in range(n):
+        if debug and i in print_index:
+            print("Building : {}%...".format(str(int(i*100/n)).zfill(2)))
+        random_vect = np.random.rand(int(math.sqrt(ch.dim)))
+        que.append(random_vect.tolist())
+        exp.append(ch(random_vect))
+    return {"question": que, "expected": exp}
+
+
+class ChoquetData(Data):
+    def __init__(self, tab: np.array = None, func: Choquet = None, expected: np.array = None, debug: bool = False):
+        super().__init__(tab, func, expected, debug)
+
+    @property
+    def n_dim(self):
+        if self.func is not None:
+            return self.func.n_dim
+
+    @property
+    def question_training(self):
+        return nmap(Choquet.pre_call, self.question.training)
+
+    @property
+    def expected_training(self):
+        return nmap(Choquet.pre_call, self.expected.training)
+
+    @property
+    def question_testing(self):
+        return nmap(Choquet.pre_call, self.question.testing)
+
+    @property
+    def expected_testing(self):
+        return nmap(Choquet.pre_call, self.expected.testing)
 
 
 class ChoquetNetwork(SimpleNetwork):
     def __init__(self,
                  # Data initialisation
-                 data: Data,
+                 data: ChoquetData,
 
                  # Layer options
                  use_bias: bool = False,
-                 activation: str = 'sigmoid',  # TODO: add this sigmoid to Choquet.__call__()
+                 activation: str = 'linear',
 
                  # Training options
                  split_ratio: float = 0.5,
