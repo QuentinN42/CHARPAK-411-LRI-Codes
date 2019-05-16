@@ -7,7 +7,7 @@ A simple Dense network.
 from useful.network import Network
 from useful.data import Data
 from useful.functions import generate
-from keras import layers
+from keras import layers, constraints
 
 
 class SimpleNetwork(Network):
@@ -25,6 +25,7 @@ class SimpleNetwork(Network):
                  # Layer options
                  use_bias: bool = False,
                  activation: str = 'linear',
+                 allow_neg: bool = True,
                  
                  # Training options
                  loss_func: callable = None,
@@ -42,7 +43,13 @@ class SimpleNetwork(Network):
             if not data:
                 raise AttributeError('Data generation need function')
         super().__init__(data)
-        self.model.add(layers.Dense(1, activation=activation, input_dim=self.n_dim, use_bias=use_bias))
+        if allow_neg:
+            self.model.add(layers.Dense(1, activation=activation,
+                                        input_dim=self.n_dim, use_bias=use_bias))
+        else:
+            self.model.add(layers.Dense(1, activation=activation,
+                                        input_dim=self.n_dim, use_bias=use_bias,
+                                        W_constraint=constraints.NonNeg()))
         if loss_func:
             self.build(loss_func)
         else:
