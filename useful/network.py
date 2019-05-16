@@ -20,9 +20,9 @@ class Network:
         self.validation_set = True
 
     @white_space
-    def build(self):
+    def build(self, loss_function: callable = 'mean_squared_error'):
         sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-        self.model.compile(loss='mean_squared_error', optimizer=sgd, metrics=['accuracy'])
+        self.model.compile(loss=loss_function, optimizer=sgd, metrics=['accuracy'])
         self.model.summary()
 
     @white_space

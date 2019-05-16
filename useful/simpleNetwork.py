@@ -27,6 +27,7 @@ class SimpleNetwork(Network):
                  activation: str = 'linear',
                  
                  # Training options
+                 loss_func: callable = None,
                  split_ratio: float = 0.5,
                  validate: bool = True
                  ):
@@ -42,7 +43,10 @@ class SimpleNetwork(Network):
                 raise AttributeError('Data generation need function')
         super().__init__(data)
         self.model.add(layers.Dense(1, activation=activation, input_dim=self.n_dim, use_bias=use_bias))
-        self.build()
+        if loss_func:
+            self.build(loss_func)
+        else:
+            self.build()
         self.train(split_ratio, validate)
 
 
