@@ -8,9 +8,8 @@ Define a network that can regress a choquet function.
 import math
 from useful.simpleNetwork import SimpleNetwork
 import numpy as np
-from useful.functions import nmap, two_by_two, is_negative
+from useful.functions import nmap, two_by_two, readable
 from useful.data import Data
-
 
 
 class Choquet:
@@ -18,7 +17,7 @@ class Choquet:
                  w: np.array,
                  w_min: np.array,
                  w_max: np.array):
-        if len(w_min) == len(w_max) == (len(w)*(len(w)-1))/2:
+        if len(w_min) == len(w_max) == (len(w) * (len(w) - 1)) / 2:
             self.n_dim = len(w) ** 2
             self.w = w
             self.w_m = w_min
@@ -48,10 +47,10 @@ def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False) -> dict:
     """
     que = []
     exp = []
-    print_index = nmap(int, np.arange(100)*n/100)
+    print_index = nmap(int, np.arange(100) * n / 100)
     for i in range(n):
         if debug and i in print_index:
-            print("Building : {}%...".format(str(int(i*100/n)).zfill(2)))
+            print("Building : {}%...".format(str(int(i * 100 / n)).zfill(2)))
         random_vect = np.random.rand(int(math.sqrt(ch.n_dim)))
         que.append(random_vect.tolist())
         exp.append(ch(random_vect))
@@ -68,7 +67,7 @@ class ChoquetData(Data):
             dico = choquet_generate(func, debug=debug)
         que = nmap(np.array, dico['question'])
         exp = nmap(np.array, dico['expected'])
-        self.func = func
+        self.func: Choquet = func
         super().__init__(tab=que, expected=exp)
 
     @property
@@ -112,24 +111,19 @@ class ChoquetNetwork(SimpleNetwork):
 
                  # Training options
                  split_ratio: float = 0.5,
+                 loss_func: callable = None,
                  validate: bool = True
                  ):
-        def loss(exp, ret):
-            return (exp - ret)**2 + (1 - sum([w[0] for w in self.model.get_weights()[0]]))**2
-        super().__init__(data, n_dim=data.n_dim,
-                         use_bias=use_bias, activation=activation, allow_neg=False,
-                         split_ratio=split_ratio, loss_func=loss, validate=validate)
+        if loss_func:
+            def _loss_func(e, r):
+                return loss_func(self, e, r)
+            super().__init__(data, n_dim=data.n_dim,
+                             use_bias=use_bias, activation=activation, allow_neg=False,
+                             split_ratio=split_ratio, loss_func=_loss_func, validate=validate)
+        else:
+            super().__init__(data, n_dim=data.n_dim,
+                             use_bias=use_bias, activation=activation, allow_neg=False,
+                             split_ratio=split_ratio, validate=validate)
 
-
-def demo():
-    v1 = np.array([0.3, 0.4])
-    v2 = np.array([0.1])
-    v3 = np.array([0.2])
-    ch = Choquet(v1, v2, v3)
-    chd = ChoquetData(func=ch, debug=True)
-    return ChoquetNetwork(chd)
-
-
-if __name__ == '__main__':
-    net = demo()
-    net.graph_history('loss')
+    def predict(self, inp):
+        return super().predict(self.data.func.pre_call(inp))
