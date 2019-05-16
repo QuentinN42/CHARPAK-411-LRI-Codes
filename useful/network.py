@@ -47,19 +47,19 @@ class Network:
         self.validation_set = validate
         self.data.split(split_ratio)
 
-        print("Learning set : {} values".format(len(self.data.question.training)))
-        print("Training set : {} values".format(len(self.data.question.testing)))
+        print("Learning set : {} values".format(len(self.data.question_training)))
+        print("Training set : {} values".format(len(self.data.question_testing)))
 
         if self.validation_set:
-            history = self.model.fit(self.data.question.training,
-                                     self.data.expected.training,
+            history = self.model.fit(self.data.question_training,
+                                     self.data.expected_training,
                                      epochs=50,
                                      validation_data=(
-                                         self.data.question.testing,
-                                         self.data.expected.testing))
+                                         self.data.question_testing,
+                                         self.data.expected_testing))
         else:
-            history = self.model.fit(self.data.question.training,
-                                     self.data.expected.training,
+            history = self.model.fit(self.data.question_training,
+                                     self.data.expected_training,
                                      epochs=50)
         self.history = history.history
         title(" Weights : ")

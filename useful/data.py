@@ -69,3 +69,19 @@ class Data:
     @property
     def n_dim(self):
         return len(self.raw_data[0])
+
+    @property
+    def question_training(self):
+        return self.question.training
+
+    @property
+    def expected_training(self):
+        return self.expected.training
+
+    @property
+    def question_testing(self):
+        return self.question.testing
+
+    @property
+    def expected_testing(self):
+        return self.expected.testing
