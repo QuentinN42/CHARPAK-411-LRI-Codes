@@ -12,8 +12,7 @@ from useful.functions import nmap, two_by_two, is_negative
 from useful.data import Data
 
 
-# TODO : check the w_min/w_max len (Issue#1)
-# TODO : set self.n_dim at the right value
+
 class Choquet:
     def __init__(self,
                  w: np.array,
