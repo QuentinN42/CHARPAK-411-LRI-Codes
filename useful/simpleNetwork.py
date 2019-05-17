@@ -20,6 +20,7 @@ class SimpleNetwork(Network):
     def __init__(self,
                  # Data initialisation
                  data: Data = None,
+                 quiet: bool = False,
                  func: callable = None,
                  n_dim: int = 2,
                  
@@ -43,7 +44,7 @@ class SimpleNetwork(Network):
         else:
             if not data:
                 raise AttributeError('Data generation need function')
-        super().__init__(data)
+        super().__init__(data, quiet)
         if allow_neg:
             self.model.add(layers.Dense(1, activation=activation,
                                         input_dim=self.n_dim, use_bias=use_bias))
@@ -60,11 +61,6 @@ class SimpleNetwork(Network):
     @property
     def weights(self) -> np.array:
         return np.array([w[0] for w in self.model.get_weights()[0]])
-
-    def print_weights(self):
-        title(" Weights : ")
-        for w in self.weights:
-            print("->", w)
 
 
 if __name__ == '__main__':

@@ -119,11 +119,11 @@ def plot_color(z: np.array, x: np.array = None, y: np.array = None, nb_ticks: in
     """
     fig, ax = plt.subplots()
     im = ax.imshow(z)
-    plt.plot([len(z)-.5, -.5], [-.5, len(z)-.5], '-k')
+    ax.plot([len(z)-.5, -.5], [-.5, len(z)-.5], '-k')
     if plot_title is not '':
-        fig.title(plot_title)
+        ax.title._text = plot_title
     fig.tight_layout()
-    plt.colorbar(im)
+    fig.colorbar(im)
     if x is not None:
         if y is None:
             y = x
@@ -133,7 +133,7 @@ def plot_color(z: np.array, x: np.array = None, y: np.array = None, nb_ticks: in
         ax.set_yticks(ticks_pos_y)
         ax.set_xticklabels([x[i] for i in ticks_pos_x])
         ax.set_yticklabels([y[i] for i in ticks_pos_y])
-    return plt
+    return fig
 
 
 def plot_3d(x, y, expected, result) -> plt:

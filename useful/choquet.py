@@ -37,7 +37,7 @@ class Choquet:
         return Choquet.pre_call(x) @ self.W
 
 
-def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False, sort: bool=False) -> dict:
+def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False, sort: bool = False) -> dict:
     """
     Generate n vectors input and expected by the ch function
     :param ch: Choquet function
@@ -59,7 +59,7 @@ def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False, sort: bool=
     if sort:
         if debug:
             print("Sorting data")
-        que.sort(key=lambda t: sum(t[0], t[1]))
+        que.sort(key=lambda t: t[0])
         if debug:
             print("Mapping func on questions")
         exp = list(map(ch, que))
@@ -113,6 +113,7 @@ class ChoquetNetwork(SimpleNetwork):
     def __init__(self,
                  # Data initialisation
                  data: ChoquetData,
+                 quiet: bool = False,
 
                  # Layer options
                  use_bias: bool = False,
@@ -126,11 +127,11 @@ class ChoquetNetwork(SimpleNetwork):
         if loss_func:
             def _loss_func(e, r):
                 return loss_func(self, e, r)
-            super().__init__(data, n_dim=data.n_dim,
+            super().__init__(data, quiet=quiet, n_dim=data.n_dim,
                              use_bias=use_bias, activation=activation, allow_neg=False,
                              split_ratio=split_ratio, loss_func=_loss_func, validate=validate)
         else:
-            super().__init__(data, n_dim=data.n_dim,
+            super().__init__(data, quiet=quiet, n_dim=data.n_dim,
                              use_bias=use_bias, activation=activation, allow_neg=False,
                              split_ratio=split_ratio, validate=validate)
 

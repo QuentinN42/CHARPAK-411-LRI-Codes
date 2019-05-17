@@ -12,20 +12,20 @@ from useful.data import Data
 
 
 class Network:
-    def __init__(self, data: Data):
+    def __init__(self, data: Data, quiet: bool = False):
         self.model = Sequential()
+        self.quiet = quiet
         self.data = data
         self.trained = False
         self.history = {}
         self.validation_set = True
 
-    @white_space
     def build(self, loss_function: callable = 'mean_squared_error'):
         sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
         self.model.compile(loss=loss_function, optimizer=sgd, metrics=['accuracy'])
-        self.model.summary()
+        if not self.quiet:
+            self.model.summary()
 
-    @white_space
     def train(self,
               split_ratio: float = 0.5,
               keras_split: bool = False,
@@ -37,6 +37,8 @@ class Network:
               ) -> None:
         """
         Split data, train the model, print weights, and graph the learning
+        :param quiet: quiet mod
+        :param keras_split:
         :param split_ratio:
         :param validate: use validation set ?
         :param plot_history: plot accuracy and loss ?
@@ -48,32 +50,37 @@ class Network:
         self.validation_set = validate
         self.data.split(split_ratio)
 
-        print("Learning set : {} values".format(len(self.data.question_training)))
-        print("Training set : {} values".format(len(self.data.question_testing)))
+        if not self.quiet:
+            print("Learning set : {} values".format(len(self.data.question_training)))
+            print("Training set : {} values".format(len(self.data.question_testing)))
 
         if not self.validation_set:
             if keras_split:
                 history = self.model.fit(self.data.question_data,
                                          self.data.expected_data,
                                          shuffle=False,
-                                         epochs=10,
+                                         verbose=int(not self.quiet),
+                                         epochs=1,
                                          validation_split=split_ratio)
             else:
                 history = self.model.fit(self.data.question_training,
                                          self.data.expected_training,
                                          shuffle=False,
-                                         epochs=10,
+                                         verbose=int(not self.quiet),
+                                         epochs=1,
                                          validation_data=(
                                              self.data.question_testing,
                                              self.data.expected_testing))
         else:
-                history = self.model.fit(self.data.question_data,
-                                         self.data.expected_data,
-                                         shuffle=False,
-                                         epochs=10)
+            history = self.model.fit(self.data.question_data,
+                                     self.data.expected_data,
+                                     shuffle=False,
+                                     verbose=int(not self.quiet),
+                                     epochs=1)
 
         self.history = history.history
-        self.print_weights()
+        if not self.quiet:
+            self.print_weights()
 
         if plot_history or plot_acc:
             self.graph_history('acc')
@@ -104,19 +111,19 @@ class Network:
     def __call__(self, inp):
         return self.predict(inp)
 
-    def graph_color(self, save_link: str = "") -> None:
+    def graph_color(self, save_link: str = "", plt_title: str = '') -> None:
         """
         plot a 2D colored graph of a 2D array
+        :param plt_title: title
         :param save_link: if you want to save the plot
         """
-        t = np.arange(20)/200
-        x = np.concatenate((t-max(t), t))
+        x = np.arange(20)/200
         xy = np.transpose([np.tile(x, len(x)), np.repeat(x, len(x))])
         z_exp = np.split(nmap(self.data.func, xy), len(x))
 
-        plt1 = plot_color(z_exp, x)
+        plt1 = plot_color(z_exp, x, plot_title="Expected "+plt_title)
         z_val = np.split(nmap(self.predict, xy), len(x))
-        plt2 = plot_color(z_val, x)
+        plt2 = plot_color(z_val, x, plot_title="Expected "+plt_title)
 
         if save_link is not "":
             plt1.savefig(save_link + "/expected.png")
