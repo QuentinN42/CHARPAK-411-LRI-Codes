@@ -28,6 +28,7 @@ class Network:
     @white_space
     def train(self,
               split_ratio: float = 0.5,
+              keras_split: bool = False,
               validate: bool = True,
               plot_history: bool = False,
               plot_acc: bool = False,
@@ -50,17 +51,27 @@ class Network:
         print("Learning set : {} values".format(len(self.data.question_training)))
         print("Training set : {} values".format(len(self.data.question_testing)))
 
-        if self.validation_set:
-            history = self.model.fit(self.data.question_training,
-                                     self.data.expected_training,
-                                     epochs=10,
-                                     validation_data=(
-                                         self.data.question_testing,
-                                         self.data.expected_testing))
+        if not self.validation_set:
+            if keras_split:
+                history = self.model.fit(self.data.question_data,
+                                         self.data.expected_data,
+                                         shuffle=False,
+                                         epochs=10,
+                                         validation_split=split_ratio)
+            else:
+                history = self.model.fit(self.data.question_training,
+                                         self.data.expected_training,
+                                         shuffle=False,
+                                         epochs=10,
+                                         validation_data=(
+                                             self.data.question_testing,
+                                             self.data.expected_testing))
         else:
-            history = self.model.fit(self.data.question_training,
-                                     self.data.expected_training,
-                                     epochs=10)
+                history = self.model.fit(self.data.question_data,
+                                         self.data.expected_data,
+                                         shuffle=False,
+                                         epochs=10)
+
         self.history = history.history
         self.print_weights()
 

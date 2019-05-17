@@ -37,12 +37,13 @@ class Choquet:
         return Choquet.pre_call(x) @ self.W
 
 
-def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False) -> dict:
+def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False, sort: bool=False) -> dict:
     """
     Generate n vectors input and expected by the ch function
     :param ch: Choquet function
     :param n: number of vectors
     :param debug: See function work progress
+    :param sort: sort vectors
     :return: dict : {"expected": [...], "question": [...]}
     """
     que = []
@@ -53,18 +54,26 @@ def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False) -> dict:
             print("Building : {}%...".format(str(int(i * 100 / n)).zfill(2)))
         random_vect = np.random.rand(int(math.sqrt(ch.n_dim)))
         que.append(random_vect.tolist())
-        exp.append(ch(random_vect))
+        if not sort:
+            exp.append(ch(random_vect))
+    if sort:
+        if debug:
+            print("Sorting data")
+        que.sort(key=lambda t: sum(t[0], t[1]))
+        if debug:
+            print("Mapping func on questions")
+        exp = list(map(ch, que))
     return {"question": que, "expected": exp}
 
 
 class ChoquetData(Data):
     func: Choquet
 
-    def __init__(self, func: Choquet, n: int = None, debug: bool = False):
+    def __init__(self, func: Choquet, n: int = None, debug: bool = False, sort: bool = False):
         if n is not None:
-            dico = choquet_generate(func, n, debug)
+            dico = choquet_generate(func, n, debug, sort)
         else:
-            dico = choquet_generate(func, debug=debug)
+            dico = choquet_generate(func, debug=debug, sort=sort)
         que = nmap(np.array, dico['question'])
         exp = nmap(np.array, dico['expected'])
         self.func: Choquet = func
