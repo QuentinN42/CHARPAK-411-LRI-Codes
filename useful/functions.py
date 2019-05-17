@@ -45,7 +45,7 @@ def nmap(func: callable, l) -> np.array:
     return np.array(list(map(func, l)))
 
 
-def two_by_two(vector: np.array, func: callable) -> np.array:
+def two_by_two(vector: iter, func: callable) -> np.array:
     out = np.array([])
     length = len(vector)
     for i in range(length):
@@ -54,7 +54,7 @@ def two_by_two(vector: np.array, func: callable) -> np.array:
     return out
 
 
-def same_len(vectors: list) -> bool:
+def same_len(vectors: iter) -> bool:
     """
     have all vectors the same length ?
     :param vectors: a list of Sized
@@ -79,7 +79,7 @@ def is_negative(n) -> int:
         return 0
 
 
-def shuffle(tab: np.array) -> np.array:
+def shuffle(tab: iter) -> np.array:
     """
     shuffle an array
     :param tab: an array
@@ -100,14 +100,22 @@ def generate(n: int = 100, div: int = 100, dim: int = 2) -> np.array:
     return np.transpose(to_transpose)
 
 
-def average(tab: np.array) -> float:
+def average(tab: iter) -> float:
     """
     return the average of a table
     """
     return sum(tab)/len(tab)
 
 
-def plot_color(z: np.array, x: np.array = None, y: np.array = None, nb_ticks: int = 5, plot_title: str = '') -> plt:
+def std_err(tab: iter):
+    e = 0
+    m = average(tab)
+    for i in tab:
+        e += (i - m) ** 2
+    return sqrt(e / len(tab))
+
+
+def plot_color(z: iter, x: iter = None, y: iter = None, nb_ticks: int = 5, plot_title: str = '') -> plt:
     """
     plot a 2D colored graph of a 2D array
     :param z: the 2D array

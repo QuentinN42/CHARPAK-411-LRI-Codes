@@ -14,9 +14,9 @@ from useful.data import Data
 
 class Choquet:
     def __init__(self,
-                 w: np.array,
-                 w_min: np.array,
-                 w_max: np.array):
+                 w: iter,
+                 w_min: iter,
+                 w_max: iter):
         if len(w_min) == len(w_max) == (len(w) * (len(w) - 1)) / 2:
             self.n_dim = len(w) ** 2
             self.w = w
@@ -33,7 +33,7 @@ class Choquet:
     def pre_call(x) -> np.ndarray:
         return np.concatenate((x, two_by_two(x, min), two_by_two(x, max)))
 
-    def __call__(self, x: np.array) -> float:
+    def __call__(self, x: iter) -> float:
         return Choquet.pre_call(x) @ self.W
 
 
@@ -59,7 +59,8 @@ def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False, sort: bool 
     if sort:
         if debug:
             print("Sorting data")
-        que.sort(key=lambda t: t[0])
+        que.sort(key=sum)
+        que = nmap(np.array, que)
         if debug:
             print("Mapping func on questions")
         exp = list(map(ch, que))

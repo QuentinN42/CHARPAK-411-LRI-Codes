@@ -8,7 +8,7 @@ import numpy as np
 from useful.functions import nmap, title, generate, write_json
 
 
-def _nmap_with_print(f: callable, t: np.array):
+def _nmap_with_print(f: callable, t: iter):
     length = len(t)
     print_list = nmap(int, np.arange(100)*length/100)
     out = np.array([])
@@ -21,7 +21,7 @@ def _nmap_with_print(f: callable, t: np.array):
 
 
 class _LearningData:
-    def __init__(self, tab: np.array):
+    def __init__(self, tab: iter):
         self.data = tab
         self.training = np.array([])
         self.testing = np.array([])
@@ -34,7 +34,7 @@ class _LearningData:
 
 
 class Data:
-    def __init__(self, tab: np.array = None, func: callable = None, expected: np.array = None, debug: bool = False):
+    def __init__(self, tab: iter = None, func: callable = None, expected: iter = None, debug: bool = False):
         if func:
             if tab is None:
                 if 'dim' in func.__dict__.keys():
