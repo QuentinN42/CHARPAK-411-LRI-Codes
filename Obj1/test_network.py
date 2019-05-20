@@ -18,6 +18,14 @@ def loss_squared(self: ChoquetNetwork, exp: float, ret: float) -> float:
     return (exp - ret)**2
 
 
+def loss_abs_norm(self: ChoquetNetwork, exp: float, ret: float) -> float:
+    return abs(exp - ret) + abs(1 - sum(self.weights))
+
+
+def loss_squared_norm(self: ChoquetNetwork, exp: float, ret: float) -> float:
+    return (exp - ret)**2 + abs(1 - sum(self.weights))
+
+
 def score(real: iter, get: iter) -> float:
     return sum([(get[i]-real[i])**2 for i in range(len(real))])
 
