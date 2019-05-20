@@ -49,26 +49,20 @@ def sort_unsort() -> None:
     plt.show()
 
 
-def loss_test(size_from: int,
-              size_to: int,
-              size_ech: int,
+def loss_test(sizes: list,
 
               loss_test_list: list,
               number_of_learning: int = 100
               ) -> None:
     """
     test some loss functions
-    :param size_from:
-    :param size_to:
-    :param size_ech:
+    :param sizes: list of data sets to test
     :param loss_test_list: list of loss function to test
     :param number_of_learning: passed to test_n
-    :return:
     """
     # building data :
     labels = ["Random", "Trié"]
     colors = ['b', 'c', 'r', 'm', 'y', 'g', 'k', 'k', 'k', 'k']
-    sizes = range(size_from, size_to, size_ech)
     real_W = np.array([0.25, 0.25, 0.25, 0.25])
     v1 = real_W[:2]
     v2 = np.array([real_W[2]])

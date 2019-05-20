@@ -13,8 +13,8 @@ from Obj1.test_network import loss_abs, loss_abs_norm
 
 def main():
     # TODO: 4 tests : (contrainte [0,1]/sans)
-    # TODO: variation de l'ectart type en fonction de la taille du training 1000 -> 50000
-    test(1, 5, 2, [loss_abs, loss_abs_norm], number_of_learning=100)
+    # TODO: variation de l'ectart type en fonction de la taille du training 1000 -> 10 000
+    test([10, 50, 100, 500, 1000, 5000, 10000], [loss_abs, loss_abs_norm], number_of_learning=20)
 
 
 if __name__ == '__main__':
