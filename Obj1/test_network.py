@@ -1,14 +1,49 @@
 # -*- coding: utf-8 -*-
-from keras import layers
-from useful import Network, Data
+"""
+Generation des tests
+
+@date: 04/05/2019
+@author: Quentin Lieumont
+"""
+from useful.choquet import Choquet, ChoquetData, ChoquetNetwork
 
 
-def run(d: Data) -> Network:
-    network = Network(d)
-    network.model.add(layers.Dense(1, activation='linear', input_dim=3, use_bias=False))
-    # TODO : see here https://keras.io/layers/about-keras-layers/
-    network.build()
+def loss_abs(self: ChoquetNetwork, exp: float, ret: float) -> float:
+    # abs(1 - sum(self.weights))
+    return abs(exp - ret)
 
-    network.train(0.03, validate=True, plot_history=(True, False))
 
-    return network
+def score(real: iter, get: iter) -> float:
+    return sum([(get[i]-real[i])**2 for i in range(len(real))])
+
+
+def test_1(ch: Choquet, loss_f: callable, sort: bool = False):
+    """
+    test a network
+    :param ch: func
+    :param loss_f: the loss
+    :param sort: sort data set
+    :return: weights
+    """
+    chd = ChoquetData(func=ch, n=10000, sort=sort)
+    net = ChoquetNetwork(chd, quiet=True, split_ratio=0.5, loss_func=loss_f)
+    wts = list(map(lambda w: w/sum(net.weights), net.weights))
+    return wts
+
+
+def test_n(ch: Choquet, n: int, loss_f: callable, sort: bool = False, quiet: bool = False):
+    """
+    test one network n times with the loss func
+    :param quiet: quiet mod: no output
+    :param loss_f: loss function
+    :param ch: func
+    :param n: number of iterations
+    :param sort: sort data set
+    :return: weights list
+    """
+    ret = []
+    for i in range(n):
+        if quiet:
+            print(i, "/", n)
+        ret.append(test_1(ch, loss_f, sort=sort))
+    return ret
