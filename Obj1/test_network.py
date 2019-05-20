@@ -17,21 +17,22 @@ def score(real: iter, get: iter) -> float:
     return sum([(get[i]-real[i])**2 for i in range(len(real))])
 
 
-def test_1(ch: Choquet, loss_f: callable, sort: bool = False):
+def test_1(ch: Choquet, loss_f: callable, sort: bool = False, size: int = 10000):
     """
     test a network
     :param ch: func
     :param loss_f: the loss
     :param sort: sort data set
+    :param size: data set size
     :return: weights
     """
-    chd = ChoquetData(func=ch, n=10000, sort=sort)
+    chd = ChoquetData(func=ch, n=size, sort=sort)
     net = ChoquetNetwork(chd, quiet=True, split_ratio=0.5, loss_func=loss_f)
     wts = list(map(lambda w: w/sum(net.weights), net.weights))
     return wts
 
 
-def test_n(ch: Choquet, n: int, loss_f: callable, sort: bool = False, quiet: bool = False):
+def test_n(ch: Choquet, n: int, loss_f: callable, sort: bool = False, quiet: bool = False, size: int = 10000):
     """
     test one network n times with the loss func
     :param quiet: quiet mod: no output
@@ -39,11 +40,12 @@ def test_n(ch: Choquet, n: int, loss_f: callable, sort: bool = False, quiet: boo
     :param ch: func
     :param n: number of iterations
     :param sort: sort data set
+    :param size: data set size
     :return: weights list
     """
     ret = []
     for i in range(n):
         if quiet:
             print(i, "/", n)
-        ret.append(test_1(ch, loss_f, sort=sort))
+        ret.append(test_1(ch, loss_f, sort=sort, size=size))
     return ret
