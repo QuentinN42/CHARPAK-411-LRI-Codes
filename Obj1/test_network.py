@@ -45,20 +45,26 @@ def test_1(ch: Choquet, loss_f: callable, sort: bool = False, size: int = 10000)
     return wts
 
 
-def test_n(ch: Choquet, n: int, loss_f: callable, sort: bool = False, quiet: bool = False, size: int = 10000):
+def test_n(ch: Choquet, n: int,
+           loss_f: callable,
+           sort: bool = False,
+           quiet: bool = False,
+           size: int = 10000,
+           pre_print:str = ""):
     """
     test one network n times with the loss func
-    :param quiet: quiet mod: no output
     :param loss_f: loss function
     :param ch: func
     :param n: number of iterations
     :param sort: sort data set
     :param size: data set size
+    :param quiet: quiet mod: no output
+    :param pre_print: print some text before advancement
     :return: weights list
     """
     ret = []
     for i in range(n):
         if quiet:
-            print(i, "/", n)
+            print(pre_print, i, "/", n)
         ret.append(test_1(ch, loss_f, sort=sort, size=size))
     return ret
