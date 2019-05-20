@@ -82,8 +82,8 @@ def loss_test(size_from: int,
         for loss in loss_test_list:
             for b in [True, False]:
                 lab = "Loss : {f}, {trie}".format(f=loss.__name__, trie=labels[int(b)])
-                print("Size {} :: {}".format(size, lab))
-                W = nmap(np.array, test_n(ch, n=number_of_learning, loss_f=loss, sort=b, size=size))
+                W = nmap(np.array, test_n(ch, n=number_of_learning, loss_f=loss, sort=b, size=size,
+                                          pre_print="Size {} :: {}".format(size, lab), quiet=False))
 
                 err_W = nmap(std_err, W)
                 err_ave = average(err_W)
