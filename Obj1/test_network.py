@@ -64,7 +64,7 @@ def test_n(ch: Choquet, n: int,
     """
     ret = []
     for i in range(n):
-        if quiet:
+        if not quiet:
             print(pre_print, i, "/", n)
         ret.append(test_1(ch, loss_f, sort=sort, size=size))
     return ret
