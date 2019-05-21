@@ -49,11 +49,10 @@ def sort_unsort() -> None:
     plt.show()
 
 
-def loss_test(sizes: list,
-
-              loss_test_list: list,
-              number_of_learning: int = 100
-              ) -> None:
+def loss_size_test(sizes: list,
+                   loss_test_list: list,
+                   number_of_learning: int = 100
+                   ) -> None:
     """
     test some loss functions
     :param sizes: list of data sets to test
@@ -70,6 +69,7 @@ def loss_test(sizes: list,
     ch = Choquet(v1, v2, v3)
     fig, ax = plt.subplots()
     ax.set_ylim(0)
+    ax.set_xlabel("Data set size, number of learning: {}".format(number_of_learning))
 
     # looping learn
     for size in sizes:
@@ -91,3 +91,66 @@ def loss_test(sizes: list,
                 plt.plot(size, err_ave, '+' + c, label=lab)
                 plt.plot(size, err_avb, '^' + c)
     fig.show()
+
+
+"""
+######################## GRAPH ########################
+
+labels = ["Random", "Trié"]
+colors = ['b', 'c', 'r', 'm', 'y', 'g', 'k', 'k', 'k', 'k']
+
+fig, ax = plt.subplots()
+ax.set_ylim(0)
+ax.set_xlabel("Number of learning, data set size: {}".format(size))
+
+for n - for loss - for b
+            lab = "Loss : {f}, {trie}".format(f=loss.__name__, trie=labels[int(b)])
+
+            err_W = nmap(std_err, W)
+            err_ave = average(err_W)
+            err_err = std_err(err_W)
+            err_avb = err_ave - err_err
+            err_avh = err_ave + err_err
+
+            c = colors[loss_test_list.index(loss)*2 + int(b)]
+
+            plt.plot(size, err_avh, 'v' + c)
+            plt.plot(size, err_ave, '+' + c, label=lab)
+            plt.plot(size, err_avb, '^' + c)
+fig.show()
+    
+"""
+
+
+def loss_learn_test(number_of_learning: list,
+                    loss_test_list: list,
+                    size: int = 100
+                    ) -> None:
+    """
+    test some loss functions
+    :param size: list of data sets to test
+    :param loss_test_list: list of loss function to test
+    :param number_of_learning: passed to test_n
+    """
+    # building data :
+    template = '"n": {n}, "loss_f": "{loss}", "sort": {b}, "size": {size}'
+    real_W = np.array([0.25, 0.25, 0.25, 0.25])
+    v1 = real_W[:2]
+    v2 = np.array([real_W[2]])
+    v3 = np.array([real_W[3]])
+    ch = Choquet(v1, v2, v3)
+
+    # looping learn
+    for n in number_of_learning:
+        for loss in loss_test_list:
+            for b in [True, False]:
+                tmp = template.format(n=n, loss=loss.__name__, b=str(b).lower(), size=size)
+
+                W = test_n(ch, n=n, loss_f=loss, sort=b, size=size,
+                           pre_print=tmp, quiet=False)
+
+                tmp += ', "result": {W}'.format(W=str(W))
+
+                with open("data/json/test_size.prejson", "a") as f:
+                    f.write("{" + tmp + "},\n")
+
