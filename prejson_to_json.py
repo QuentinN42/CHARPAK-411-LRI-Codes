@@ -28,8 +28,8 @@ def build(path: str, path_to: str = ""):
             end = "".join(end.split(", [nan, nan, nan, nan]"))
             with open(path_to, "a") as w:
                 w.write(header + end)
-    with open(path_to, 'a') as w:
-        w.write('{}]\n')
+    with open(path_to, "a") as w:
+        w.write("{}]\n")
 
 
 if __name__ == "__main__":

@@ -20,21 +20,22 @@ class Network:
         self.history = {}
         self.validation_set = True
 
-    def build(self, loss_function: callable = 'mean_squared_error'):
+    def build(self, loss_function: callable = "mean_squared_error"):
         sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-        self.model.compile(loss=loss_function, optimizer=sgd, metrics=['accuracy'])
+        self.model.compile(loss=loss_function, optimizer=sgd, metrics=["accuracy"])
         if not self.quiet:
             self.model.summary()
 
-    def train(self,
-              split_ratio: float = 0.5,
-              keras_split: bool = False,
-              validate: bool = True,
-              plot_history: bool = False,
-              plot_acc: bool = False,
-              plot_loss: bool = False,
-              save_link: str = ""
-              ) -> None:
+    def train(
+        self,
+        split_ratio: float = 0.5,
+        keras_split: bool = False,
+        validate: bool = True,
+        plot_history: bool = False,
+        plot_acc: bool = False,
+        plot_loss: bool = False,
+        save_link: str = "",
+    ) -> None:
         """
         Split data, train the model, print weights, and graph the learning
         :param quiet: quiet mod
@@ -56,39 +57,46 @@ class Network:
 
         if not self.validation_set:
             if keras_split:
-                history = self.model.fit(self.data.question_data,
-                                         self.data.expected_data,
-                                         shuffle=False,
-                                         verbose=int(not self.quiet),
-                                         epochs=1,
-                                         validation_split=split_ratio)
+                history = self.model.fit(
+                    self.data.question_data,
+                    self.data.expected_data,
+                    shuffle=False,
+                    verbose=int(not self.quiet),
+                    epochs=1,
+                    validation_split=split_ratio,
+                )
             else:
-                history = self.model.fit(self.data.question_training,
-                                         self.data.expected_training,
-                                         shuffle=False,
-                                         verbose=int(not self.quiet),
-                                         epochs=1,
-                                         validation_data=(
-                                             self.data.question_testing,
-                                             self.data.expected_testing))
+                history = self.model.fit(
+                    self.data.question_training,
+                    self.data.expected_training,
+                    shuffle=False,
+                    verbose=int(not self.quiet),
+                    epochs=1,
+                    validation_data=(
+                        self.data.question_testing,
+                        self.data.expected_testing,
+                    ),
+                )
         else:
-            history = self.model.fit(self.data.question_data,
-                                     self.data.expected_data,
-                                     shuffle=False,
-                                     verbose=int(not self.quiet),
-                                     epochs=1)
+            history = self.model.fit(
+                self.data.question_data,
+                self.data.expected_data,
+                shuffle=False,
+                verbose=int(not self.quiet),
+                epochs=1,
+            )
 
         self.history = history.history
         if not self.quiet:
             self.print_weights()
 
         if plot_history or plot_acc:
-            self.graph_history('acc')
+            self.graph_history("acc")
         if plot_history or plot_loss:
-            self.graph_history('loss')
+            self.graph_history("loss")
         if save_link:
-            self.graph_history('acc', save_link)
-            self.graph_history('loss', save_link)
+            self.graph_history("acc", save_link)
+            self.graph_history("loss", save_link)
 
     @property
     def weights(self) -> np.array:
@@ -111,19 +119,19 @@ class Network:
     def __call__(self, inp):
         return self.predict(inp)
 
-    def graph_color(self, save_link: str = "", plt_title: str = '') -> None:
+    def graph_color(self, save_link: str = "", plt_title: str = "") -> None:
         """
         plot a 2D colored graph of a 2D array
         :param plt_title: title
         :param save_link: if you want to save the plot
         """
-        x = np.arange(20)/200
+        x = np.arange(20) / 200
         xy = np.transpose([np.tile(x, len(x)), np.repeat(x, len(x))])
         z_exp = np.split(nmap(self.data.func, xy), len(x))
 
-        plt1 = plot_color(z_exp, x, plot_title="Expected "+plt_title)
+        plt1 = plot_color(z_exp, x, plot_title="Expected " + plt_title)
         z_val = np.split(nmap(self.predict, xy), len(x))
-        plt2 = plot_color(z_val, x, plot_title="Expected "+plt_title)
+        plt2 = plot_color(z_val, x, plot_title="Expected " + plt_title)
 
         if save_link is not "":
             plt1.savefig(save_link + "/expected.png")

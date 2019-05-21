@@ -15,13 +15,10 @@ import numpy as np
 
 def main():
     dix = 10 ** np.arange(1, 3)
-    n = sorted(nmap(int, np.concatenate((dix/4,2*dix/4,3*dix/4,dix))))
+    n = sorted(nmap(int, np.concatenate((dix / 4, 2 * dix / 4, 3 * dix / 4, dix))))
     print(n)
-    test(number_of_learning=n,
-         loss_test_list=[loss_abs, loss_abs_norm],
-         size=10
-         )
+    test(number_of_learning=n, loss_test_list=[loss_abs, loss_abs_norm], size=10)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
