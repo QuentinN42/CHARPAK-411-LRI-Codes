@@ -151,6 +151,6 @@ def loss_learn_test(number_of_learning: list,
 
                 tmp += ', "result": {W}'.format(W=str(W))
 
-                with open("data/json/test_size.prejson", "a") as f:
+                with open("data/json/test_size1.prejson", "a") as f:
                     f.write("{" + tmp + "},\n")
 
