@@ -12,19 +12,19 @@ import json
 
 
 def get_json(link: str) -> dict:
-    return json.load(open(link, 'r'))
+    return json.load(open(link, "r"))
 
 
 def write_json(link: str, data) -> None:
-    _json = json.dumps(data, sort_keys=True, separators=(',', ': '))
-    with open(link, 'w') as f:
-        for l in _json.split('\n'):
-            f.write(l + '\n')
+    _json = json.dumps(data, sort_keys=True, separators=(",", ": "))
+    with open(link, "w") as f:
+        for l in _json.split("\n"):
+            f.write(l + "\n")
 
 
 def title(t: str):
     print("\n" * 5)
-    print("=" * 20 + t + "="*20)
+    print("=" * 20 + t + "=" * 20)
 
 
 def white_space(func):
@@ -32,6 +32,7 @@ def white_space(func):
         print("\n" * 5)
         func(*args, **kwargs)
         print("\n" * 5)
+
     return inner
 
 
@@ -49,7 +50,7 @@ def two_by_two(vector: iter, func: callable) -> np.array:
     out = np.array([])
     length = len(vector)
     for i in range(length):
-        for j in range(i+1, length):
+        for j in range(i + 1, length):
             out = np.append(out, func(vector[[i, j]]))
     return out
 
@@ -69,7 +70,7 @@ def readable(e) -> str:
     format 0.15424548 in to 0.15
     :return: readable number
     """
-    return str(int(e*100)/100)
+    return str(int(e * 100) / 100)
 
 
 def is_negative(n) -> int:
@@ -95,8 +96,11 @@ def generate(n: int = 100, div: int = 100, dim: int = 2) -> np.array:
     Generate the list of all vectors at [dim] dimensions from [-n/div] to [n/div] with a step of [1/div]
     """
     t = np.arange(n) / div
-    tab = np.concatenate((t[:-1]-max(t), t))
-    to_transpose = [np.repeat(np.tile(tab, len(tab)**i), len(tab)**(dim-i-1)) for i in range(0, dim)]
+    tab = np.concatenate((t[:-1] - max(t), t))
+    to_transpose = [
+        np.repeat(np.tile(tab, len(tab) ** i), len(tab) ** (dim - i - 1))
+        for i in range(0, dim)
+    ]
     return np.transpose(to_transpose)
 
 
@@ -104,7 +108,7 @@ def average(tab: iter) -> float:
     """
     return the average of a table
     """
-    return sum(tab)/len(tab)
+    return sum(tab) / len(tab)
 
 
 def std_err(tab: iter):
@@ -115,7 +119,9 @@ def std_err(tab: iter):
     return sqrt(e / len(tab))
 
 
-def plot_color(z: iter, x: iter = None, y: iter = None, nb_ticks: int = 5, plot_title: str = '') -> plt:
+def plot_color(
+    z: iter, x: iter = None, y: iter = None, nb_ticks: int = 5, plot_title: str = ""
+) -> plt:
     """
     plot a 2D colored graph of a 2D array
     :param z: the 2D array
@@ -127,15 +133,15 @@ def plot_color(z: iter, x: iter = None, y: iter = None, nb_ticks: int = 5, plot_
     """
     fig, ax = plt.subplots()
     im = ax.imshow(z)
-    ax.plot([len(z)-.5, -.5], [-.5, len(z)-.5], '-k')
-    if plot_title is not '':
+    ax.plot([len(z) - 0.5, -0.5], [-0.5, len(z) - 0.5], "-k")
+    if plot_title is not "":
         ax.title._text = plot_title
     fig.tight_layout()
     fig.colorbar(im)
     if x is not None:
         if y is None:
             y = x
-        ticks_pos_x = nmap(int, np.arange(nb_ticks)*(len(x)-1)/(nb_ticks-1))
+        ticks_pos_x = nmap(int, np.arange(nb_ticks) * (len(x) - 1) / (nb_ticks - 1))
         ticks_pos_y = nmap(int, np.arange(nb_ticks) * (len(y) - 1) / (nb_ticks - 1))
         ax.set_xticks(ticks_pos_x)
         ax.set_yticks(ticks_pos_y)
@@ -155,8 +161,8 @@ def plot_3d(x, y, expected, result) -> plt:
     """
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.plot(x, y, expected, 'or', label='expected')
-    ax.plot(x, y, result, '+k', label='values')
+    ax.plot(x, y, expected, "or", label="expected")
+    ax.plot(x, y, result, "+k", label="values")
     plt.legend()
     return plt
 
@@ -169,11 +175,11 @@ def history_plot(history: dict, key: str, validation_set: bool) -> plt:
     :param validation_set: if the validation set has been used
     :return:
     """
-    plt.plot(history[key], label='Train')
+    plt.plot(history[key], label="Train")
     if validation_set:
-        plt.plot(history['val_'+key], label='Test')
-    plt.title('Model '+key)
+        plt.plot(history["val_" + key], label="Test")
+    plt.title("Model " + key)
     plt.ylabel(key.capitalize())
-    plt.xlabel('Epoch')
-    plt.legend(loc='upper left')
+    plt.xlabel("Epoch")
+    plt.legend(loc="upper left")
     return plt

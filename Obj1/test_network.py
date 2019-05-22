@@ -15,7 +15,7 @@ def loss_abs(self: ChoquetNetwork, exp: float, ret: float) -> float:
 
 def loss_squared(self: ChoquetNetwork, exp: float, ret: float) -> float:
     # abs(1 - sum(self.weights))
-    return (exp - ret)**2
+    return (exp - ret) ** 2
 
 
 def loss_abs_norm(self: ChoquetNetwork, exp: float, ret: float) -> float:
@@ -23,11 +23,11 @@ def loss_abs_norm(self: ChoquetNetwork, exp: float, ret: float) -> float:
 
 
 def loss_squared_norm(self: ChoquetNetwork, exp: float, ret: float) -> float:
-    return (exp - ret)**2 + abs(1 - sum(self.weights))
+    return (exp - ret) ** 2 + abs(1 - sum(self.weights))
 
 
 def score(real: iter, get: iter) -> float:
-    return sum([(get[i]-real[i])**2 for i in range(len(real))])
+    return sum([(get[i] - real[i]) ** 2 for i in range(len(real))])
 
 
 def test_1(ch: Choquet, loss_f: callable, sort: bool = False, size: int = 10000):
@@ -41,16 +41,19 @@ def test_1(ch: Choquet, loss_f: callable, sort: bool = False, size: int = 10000)
     """
     chd = ChoquetData(func=ch, n=size, sort=sort)
     net = ChoquetNetwork(chd, quiet=True, split_ratio=0.5, loss_func=loss_f)
-    wts = list(map(lambda w: w/sum(net.weights), net.weights))
+    wts = list(map(lambda w: w / sum(net.weights), net.weights))
     return wts
 
 
-def test_n(ch: Choquet, n: int,
-           loss_f: callable,
-           sort: bool = False,
-           quiet: bool = False,
-           size: int = 10000,
-           pre_print:str = ""):
+def test_n(
+    ch: Choquet,
+    n: int,
+    loss_f: callable,
+    sort: bool = False,
+    quiet: bool = False,
+    size: int = 10000,
+    pre_print: str = "",
+):
     """
     test one network n times with the loss func
     :param loss_f: loss function

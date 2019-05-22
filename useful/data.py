@@ -10,13 +10,13 @@ from useful.functions import nmap, title, generate, write_json
 
 def _nmap_with_print(f: callable, t: iter):
     length = len(t)
-    print_list = nmap(int, np.arange(100)*length/100)
+    print_list = nmap(int, np.arange(100) * length / 100)
     out = np.array([])
     title(" Generation of {} data... ".format(length))
     for i in range(length):
         out = np.append(out, f(t[i]))
         if i in print_list:
-            print("Building data : {}%".format(str(int(i*100/length)).zfill(2)))
+            print("Building data : {}%".format(str(int(i * 100 / length)).zfill(2)))
     return out
 
 
@@ -34,10 +34,16 @@ class _LearningData:
 
 
 class Data:
-    def __init__(self, tab: iter = None, func: callable = None, expected: iter = None, debug: bool = False):
+    def __init__(
+        self,
+        tab: iter = None,
+        func: callable = None,
+        expected: iter = None,
+        debug: bool = False,
+    ):
         if func:
             if tab is None:
-                if 'dim' in func.__dict__.keys():
+                if "dim" in func.__dict__.keys():
                     tab = generate(dim=func.dim)
                 else:
                     raise AttributeError("Can't extract dimension")
@@ -45,7 +51,9 @@ class Data:
             self.raw_data = tab
             self.question = _LearningData(self.raw_data)
             if debug:
-                self.expected = _LearningData(_nmap_with_print(self.func, self.question_data))
+                self.expected = _LearningData(
+                    _nmap_with_print(self.func, self.question_data)
+                )
             else:
                 self.expected = _LearningData(nmap(self.func, self.question_data))
         elif expected is not None:
@@ -53,7 +61,7 @@ class Data:
             self.question = _LearningData(self.raw_data)
             self.expected = _LearningData(expected)
         else:
-            raise AttributeError('func or awnsers needed')
+            raise AttributeError("func or awnsers needed")
 
     def __len__(self) -> int:
         return len(self.question)
@@ -64,7 +72,13 @@ class Data:
         self.expected.split(split_at)
 
     def save(self, file_name: str) -> None:
-        write_json(file_name, {"question": self.question_data.tolist(), "expected": self.expected_data.tolist()})
+        write_json(
+            file_name,
+            {
+                "question": self.question_data.tolist(),
+                "expected": self.expected_data.tolist(),
+            },
+        )
 
     @property
     def n_dim(self):

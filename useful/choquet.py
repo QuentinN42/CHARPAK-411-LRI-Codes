@@ -13,17 +13,14 @@ from useful.data import Data
 
 
 class Choquet:
-    def __init__(self,
-                 w: iter,
-                 w_min: iter,
-                 w_max: iter):
+    def __init__(self, w: iter, w_min: iter, w_max: iter):
         if len(w_min) == len(w_max) == (len(w) * (len(w) - 1)) / 2:
             self.n_dim = len(w) ** 2
             self.w = w
             self.w_m = w_min
             self.w_M = w_max
         else:
-            raise AttributeError('Length not match')
+            raise AttributeError("Length not match")
 
     @property
     def W(self):
@@ -37,7 +34,9 @@ class Choquet:
         return Choquet.pre_call(x) @ self.W
 
 
-def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False, sort: bool = False) -> dict:
+def choquet_generate(
+    ch: Choquet, n: int = 100, debug: bool = False, sort: bool = False
+) -> dict:
     """
     Generate n vectors input and expected by the ch function
     :param ch: Choquet function
@@ -70,13 +69,15 @@ def choquet_generate(ch: Choquet, n: int = 100, debug: bool = False, sort: bool 
 class ChoquetData(Data):
     func: Choquet
 
-    def __init__(self, func: Choquet, n: int = None, debug: bool = False, sort: bool = False):
+    def __init__(
+        self, func: Choquet, n: int = None, debug: bool = False, sort: bool = False
+    ):
         if n is not None:
             dico = choquet_generate(func, n, debug, sort)
         else:
             dico = choquet_generate(func, debug=debug, sort=sort)
-        que = nmap(np.array, dico['question'])
-        exp = nmap(np.array, dico['expected'])
+        que = nmap(np.array, dico["question"])
+        exp = nmap(np.array, dico["expected"])
         self.func: Choquet = func
         super().__init__(tab=que, expected=exp)
 
@@ -111,30 +112,46 @@ class ChoquetData(Data):
 
 
 class ChoquetNetwork(SimpleNetwork):
-    def __init__(self,
-                 # Data initialisation
-                 data: ChoquetData,
-                 quiet: bool = False,
-
-                 # Layer options
-                 use_bias: bool = False,
-                 activation: str = 'linear',
-
-                 # Training options
-                 split_ratio: float = 0.5,
-                 loss_func: callable = None,
-                 validate: bool = True
-                 ):
+    def __init__(
+        self,
+        # Data initialisation
+        data: ChoquetData,
+        quiet: bool = False,
+        # Layer options
+        use_bias: bool = False,
+        activation: str = "linear",
+        # Training options
+        split_ratio: float = 0.5,
+        loss_func: callable = None,
+        validate: bool = True,
+    ):
         if loss_func:
+
             def _loss_func(e, r):
                 return loss_func(self, e, r)
-            super().__init__(data, quiet=quiet, n_dim=data.n_dim,
-                             use_bias=use_bias, activation=activation, allow_neg=False,
-                             split_ratio=split_ratio, loss_func=_loss_func, validate=validate)
+
+            super().__init__(
+                data,
+                quiet=quiet,
+                n_dim=data.n_dim,
+                use_bias=use_bias,
+                activation=activation,
+                allow_neg=False,
+                split_ratio=split_ratio,
+                loss_func=_loss_func,
+                validate=validate,
+            )
         else:
-            super().__init__(data, quiet=quiet, n_dim=data.n_dim,
-                             use_bias=use_bias, activation=activation, allow_neg=False,
-                             split_ratio=split_ratio, validate=validate)
+            super().__init__(
+                data,
+                quiet=quiet,
+                n_dim=data.n_dim,
+                use_bias=use_bias,
+                activation=activation,
+                allow_neg=False,
+                split_ratio=split_ratio,
+                validate=validate,
+            )
 
     def predict(self, inp):
         return super().predict(self.data.func.pre_call(inp))

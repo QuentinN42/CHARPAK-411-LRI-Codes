@@ -17,23 +17,23 @@ class SimpleNetwork(Network):
     Output : activation(X.W)
     with W the weights vector
     """
-    def __init__(self,
-                 # Data initialisation
-                 data: Data = None,
-                 quiet: bool = False,
-                 func: callable = None,
-                 n_dim: int = 2,
-                 
-                 # Layer options
-                 use_bias: bool = False,
-                 activation: str = 'linear',
-                 allow_neg: bool = True,
-                 
-                 # Training options
-                 loss_func: callable = None,
-                 split_ratio: float = 0.5,
-                 validate: bool = True
-                 ):
+
+    def __init__(
+        self,
+        # Data initialisation
+        data: Data = None,
+        quiet: bool = False,
+        func: callable = None,
+        n_dim: int = 2,
+        # Layer options
+        use_bias: bool = False,
+        activation: str = "linear",
+        allow_neg: bool = True,
+        # Training options
+        loss_func: callable = None,
+        split_ratio: float = 0.5,
+        validate: bool = True,
+    ):
         self.n_dim = n_dim
         if func:
             if not data:
@@ -43,15 +43,24 @@ class SimpleNetwork(Network):
                 data = Data(data.raw_data, func)
         else:
             if not data:
-                raise AttributeError('Data generation need function')
+                raise AttributeError("Data generation need function")
         super().__init__(data, quiet)
         if allow_neg:
-            self.model.add(layers.Dense(1, activation=activation,
-                                        input_dim=self.n_dim, use_bias=use_bias))
+            self.model.add(
+                layers.Dense(
+                    1, activation=activation, input_dim=self.n_dim, use_bias=use_bias
+                )
+            )
         else:
-            self.model.add(layers.Dense(1, activation=activation,
-                                        input_dim=self.n_dim, use_bias=use_bias,
-                                        W_constraint=constraints.NonNeg()))
+            self.model.add(
+                layers.Dense(
+                    1,
+                    activation=activation,
+                    input_dim=self.n_dim,
+                    use_bias=use_bias,
+                    W_constraint=constraints.NonNeg(),
+                )
+            )
         if loss_func:
             self.build(loss_func)
         else:
@@ -63,6 +72,6 @@ class SimpleNetwork(Network):
         return np.array([w[0] for w in self.model.get_weights()[0]])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     net = SimpleNetwork(func=sum)
     net.graph_color()
