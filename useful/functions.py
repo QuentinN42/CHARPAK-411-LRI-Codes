@@ -104,6 +104,13 @@ def generate(n: int = 100, div: int = 100, dim: int = 2) -> np.array:
     return np.transpose(to_transpose)
 
 
+def idem_items(t: iter) -> bool:
+    """
+    :return: if all items are sames
+    """
+    return max(t) == min(t)
+
+
 def average(tab: iter) -> float:
     """
     return the average of a table
