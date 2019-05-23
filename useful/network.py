@@ -130,14 +130,17 @@ class Network:
         z_exp = np.split(nmap(self.data.func, xy), len(x))
 
         plt1 = plot_color(z_exp, x, plot_title="Expected " + plt_title)
-        z_val = np.split(nmap(self.predict, xy), len(x))
-        plt2 = plot_color(z_val, x, plot_title="Expected " + plt_title)
-
         if save_link is not "":
             plt1.savefig(save_link + "/expected.png")
-            plt2.savefig(save_link + "/result.png")
         else:
             plt1.show()
+
+        z_val = np.split(nmap(self.predict, xy), len(x))
+        plt2 = plot_color(z_val, x, plot_title="Result " + plt_title)
+
+        if save_link is not "":
+            plt2.savefig(save_link + "/result.png")
+        else:
             plt2.show()
 
     def graph3d(self, save_link: str = "") -> None:
