@@ -59,6 +59,7 @@ class SimpleNetwork(Network):
                     input_dim=self.n_dim,
                     use_bias=use_bias,
                     W_constraint=constraints.NonNeg(),
+                    kernel_constraint=constraints.max_norm(1.)
                 )
             )
         if loss_func:
@@ -73,5 +74,11 @@ class SimpleNetwork(Network):
 
 
 if __name__ == "__main__":
-    net = SimpleNetwork(func=sum)
+    from random import random as rand
+
+
+    def f(t: iter):
+        return t[0]/3 + 2*t[1]/3 + rand()*0.5
+
+    net = SimpleNetwork(func=f)
     net.graph_color()
