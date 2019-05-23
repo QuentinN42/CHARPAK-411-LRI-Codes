@@ -6,9 +6,10 @@ Test 1/3 2/3 with random and not linear dataset
 """
 from useful.data import Data
 from useful.simpleNetwork import SimpleNetwork
-from useful.functions import average, std_err, generate, get_json
+from useful.functions import average, std_err, generate
 import numpy as np
 from random import random as rand
+
 
 def test_network(f: callable, d: iter) -> float:
     if d is None:
@@ -38,7 +39,9 @@ def build_data(link: str, n: int = 10):
         def f(t: iter):
             return t[0] / 3 + 2 * t[1] / 3 + (rand() * 2 - 1) * e
 
-        t = [test_network(f, d) for i in range(n)]
+        t = []
+        for i in range(n):
+            t.append(test_network(f, d))
         with open(link, 'a') as file:
             file.write(str([e, t]) + "\n")
 
