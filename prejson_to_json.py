@@ -6,8 +6,9 @@ Passage des fichiers prejson vers json
 """
 
 
-def build(path: str, path_to: str = ""):
+def build(path: str, path_to: str = "", split: bool = True):
     """
+    :param split: split head and end ?
     :type path: path to the .prejson file
     :param path_to: optional output file
     :return: None
@@ -22,12 +23,16 @@ def build(path: str, path_to: str = ""):
         w.write("[\n")
     with open(path, "r") as r:
         for line in r:
-            header, end = line.split("[[")
-            end = "[[" + end
-            end = "".join(end.split("[nan, nan, nan, nan], "))
-            end = "".join(end.split(", [nan, nan, nan, nan]"))
-            with open(path_to, "a") as w:
-                w.write(header + end)
+            if split:
+                header, end = line.split("[[")
+                end = "[[" + end
+                end = "".join(end.split("[nan, nan, nan, nan], "))
+                end = "".join(end.split(", [nan, nan, nan, nan]"))
+                with open(path_to, "a") as w:
+                    w.write(header + end)
+            else:
+                with open(path_to, "a") as w:
+                    w.write(line)
     with open(path_to, "a") as w:
         w.write("{}]\n")
 
