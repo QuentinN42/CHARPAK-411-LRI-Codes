@@ -6,7 +6,7 @@ A simple Dense network.
 """
 from useful.network import Network
 from useful.data import Data
-from useful.functions import generate, title
+from useful.functions import generate
 from keras import layers, constraints
 import numpy as np
 
@@ -29,6 +29,8 @@ class SimpleNetwork(Network):
         use_bias: bool = False,
         activation: str = "linear",
         allow_neg: bool = True,
+        max_norm: float = 1.,
+
         # Training options
         loss_func: callable = None,
         split_ratio: float = 0.5,
@@ -48,7 +50,11 @@ class SimpleNetwork(Network):
         if allow_neg:
             self.model.add(
                 layers.Dense(
-                    1, activation=activation, input_dim=self.n_dim, use_bias=use_bias
+                    1,
+                    activation=activation,
+                    input_dim=self.n_dim,
+                    use_bias=use_bias,
+                    kernel_constraint=constraints.max_norm(max_norm)
                 )
             )
         else:
@@ -59,7 +65,7 @@ class SimpleNetwork(Network):
                     input_dim=self.n_dim,
                     use_bias=use_bias,
                     W_constraint=constraints.NonNeg(),
-                    kernel_constraint=constraints.max_norm(1.)
+                    kernel_constraint=constraints.max_norm(max_norm)
                 )
             )
         if loss_func:
@@ -73,12 +79,3 @@ class SimpleNetwork(Network):
         return np.array([w[0] for w in self.model.get_weights()[0]])
 
 
-if __name__ == "__main__":
-    from random import random as rand
-
-
-    def f(t: iter):
-        return t[0]/3 + 2*t[1]/3 + rand()*0.5
-
-    net = SimpleNetwork(func=f)
-    net.graph_color()
