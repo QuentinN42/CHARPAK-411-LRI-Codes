@@ -71,7 +71,6 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
-    ax.set_ylim(0)
     ax.set_xlabel("Random range")
     ax.set_ylabel("Std error")
 
