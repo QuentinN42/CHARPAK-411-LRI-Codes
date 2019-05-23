@@ -91,7 +91,7 @@ def shuffle(tab: iter) -> np.array:
     return tab[indices]
 
 
-def generate(n: int = 100, div: int = 100, dim: int = 2) -> np.array:
+def generate(n: int = 100, div: int = 100, dim: int = 2) -> np.ndarray:
     """
     Generate the list of all vectors at [dim] dimensions from [-n/div] to [n/div] with a step of [1/div]
     """
