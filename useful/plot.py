@@ -18,9 +18,10 @@ class One_Line:
     res_key: str = "result"
     bool_labels = ["Random", "Sorted"]
 
-    def __init__(self, raw_line: dict):
+    def __init__(self, raw_line: dict, interquartile: bool = False):
         self.header = {k: raw_line[k] for k in raw_line.keys() if k != self.res_key}
         self.result = raw_line[self.res_key]
+        self.interquartile = interquartile
 
     def __len__(self):
         return len(self.result)
@@ -71,7 +72,10 @@ class One_Line:
         tab = []
         for i in range(len(self.result[0])):
             tab.append(std_err([e[i] for e in self.result]))
-        return tab
+        if self.interquartile:
+            return sorted(tab)[int(len(tab)/4):int(3*len(tab)/4)]
+        else:
+            return tab
 
     @property
     def average(self) -> float:
@@ -94,7 +98,7 @@ class To_Plot_Data:
     }
     colors = ["b", "c", "r", "m", "y", "g", "k", "k", "k", "k"]
 
-    def __init__(self, data):
+    def __init__(self, data, interquartile: bool = False):
         if type(data) is str:
             dicos = [e for e in get_json(data) if e != {}]
         elif type(data) is list:
@@ -103,7 +107,7 @@ class To_Plot_Data:
             raise AttributeError("Data must be init with str or list type")
         self.data = []
         for d in dicos:
-            line = One_Line(d)
+            line = One_Line(d, interquartile)
             if line not in self.data:
                 self.data.append(line)
             else:
@@ -185,6 +189,6 @@ class To_Plot_Data:
 
 
 if __name__ == "__main__":
-    data = To_Plot_Data("data/json/test_n2.json")
+    data = To_Plot_Data("data/json/test_n2.json", True)
     data.print_all()
     data.plot()
