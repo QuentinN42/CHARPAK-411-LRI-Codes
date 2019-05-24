@@ -12,9 +12,10 @@ class One_Line:
     """
     One line of data
     """
+
     header: dict
     result: list
-    res_key: str = 'result'
+    res_key: str = "result"
     bool_labels = ["Random", "Sorted"]
 
     def __init__(self, raw_line: dict):
@@ -34,7 +35,7 @@ class One_Line:
         return self.header[item]
 
     def __repr__(self):
-        b = str(self.bool_labels[int(self.header['sort'])][0])
+        b = str(self.bool_labels[int(self.header["sort"])][0])
         s = str(self.header["size"])
         n = str(self.header["n"])
         f = " " + str(self.header["loss_f"])
@@ -45,7 +46,7 @@ class One_Line:
 
     def __add__(self, other):
         if other != self:
-            raise ArithmeticError(f'+ is only between to One_Line, got {type(other)}')
+            raise ArithmeticError(f"+ is only between to One_Line, got {type(other)}")
         tmp = self
         tmp.result += other.result
         return One_Line(tmp.dict)
@@ -55,7 +56,7 @@ class One_Line:
 
     @property
     def plot_label(self) -> str:
-        b = str(self.bool_labels[int(self.header['sort'])])
+        b = str(self.bool_labels[int(self.header["sort"])])
         f = str(self.header["loss_f"])
         return f"{f} {b}"
 
@@ -85,10 +86,13 @@ class To_Plot_Data:
     """
     All datas to plot
     """
+
     data: list
-    xlabel: dict = {"n": "Number of learning, Size of the dataset: {s} values",
-                    "size": "Size of the dataset, Number of learning: {n} learning"}
-    colors = ['b', 'c', 'r', 'm', 'y', 'g', 'k', 'k', 'k', 'k']
+    xlabel: dict = {
+        "n": "Number of learning, Size of the dataset: {s} values",
+        "size": "Size of the dataset, Number of learning: {n} learning",
+    }
+    colors = ["b", "c", "r", "m", "y", "g", "k", "k", "k", "k"]
 
     def __init__(self, data):
         if type(data) is str:
@@ -142,7 +146,11 @@ class To_Plot_Data:
     def plot(self):
         fig, ax = plt.subplots()
         # ax.set_ylim(0)
-        ax.set_xlabel(self.xlabel[self.variations].format(n=self.data[0]['n'], s=self.data[0]['size']))
+        ax.set_xlabel(
+            self.xlabel[self.variations].format(
+                n=self.data[0]["n"], s=self.data[0]["size"]
+            )
+        )
         for i, tab in enumerate(self.to_plot):
             x = [l[self.variations] for l in tab]
             err = [l.std_err for l in tab]
@@ -152,31 +160,31 @@ class To_Plot_Data:
 
             c = self.colors[i]
 
-            ax.plot(x, ave, '+' + c, label=tab[0].plot_label)
-            ax.plot(x, aveh, 'v-' + c)
-            ax.plot(x, aveb, '^-' + c)
+            ax.plot(x, ave, "+" + c, label=tab[0].plot_label)
+            ax.plot(x, aveh, "v-" + c)
+            ax.plot(x, aveb, "^-" + c)
 
         ax.legend()
         fig.show()
 
     @property
     def ns(self):
-        return [e['n'] for e in self.data]
+        return [e["n"] for e in self.data]
 
     @property
     def sizes(self):
-        return [e['size'] for e in self.data]
+        return [e["size"] for e in self.data]
 
     @property
     def funcs(self):
-        return [e['loss_f'] for e in self.data]
+        return [e["loss_f"] for e in self.data]
 
     @property
     def sorts(self):
-        return [e['sort'] for e in self.data]
+        return [e["sort"] for e in self.data]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     data = To_Plot_Data("data/json/test_n2.json")
     data.print_all()
     data.plot()

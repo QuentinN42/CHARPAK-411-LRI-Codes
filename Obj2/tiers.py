@@ -21,7 +21,7 @@ def test_network(f: callable, d: iter) -> float:
 
 
 def generate_with_hole(n: int = 100, get: float = 0.1):
-    tab = np.array([i for i in range(n+1) if i < get*n or i > (1-get)*n]) / n
+    tab = np.array([i for i in range(n + 1) if i < get * n or i > (1 - get) * n]) / n
     to_transpose = [
         np.repeat(np.tile(tab, len(tab) ** i), len(tab) ** (2 - i - 1))
         for i in range(0, 2)
@@ -42,7 +42,7 @@ def build_data(link: str, n: int = 10):
         t = []
         for i in range(n):
             t.append(test_network(f, d))
-        with open(link, 'a') as file:
+        with open(link, "a") as file:
             file.write(str([e, t]) + "\n")
 
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # build_data(lien, n=50)
 
     dico = {}
-    with open(lien, 'r') as f:
+    with open(lien, "r") as f:
         for l in f:
             d: dict = eval(l)
             if d[0] in dico.keys():
@@ -73,11 +73,12 @@ if __name__ == "__main__":
         R2b.append(a - s)
 
     import matplotlib.pyplot as plt
+
     fig, ax = plt.subplots()
     ax.set_xlabel("Random range")
     ax.set_ylabel("Std error")
 
-    ax.plot(error, R2h, 'vk')
-    ax.plot(error, R2, '+k')
-    ax.plot(error, R2b, '^k')
+    ax.plot(error, R2h, "vk")
+    ax.plot(error, R2, "+k")
+    ax.plot(error, R2b, "^k")
     fig.show()

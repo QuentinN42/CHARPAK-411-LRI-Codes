@@ -29,8 +29,7 @@ class SimpleNetwork(Network):
         use_bias: bool = False,
         activation: str = "linear",
         allow_neg: bool = True,
-        max_norm: float = 1.,
-
+        max_norm: float = 1.0,
         # Training options
         loss_func: callable = None,
         split_ratio: float = 0.5,
@@ -54,7 +53,7 @@ class SimpleNetwork(Network):
                     activation=activation,
                     input_dim=self.n_dim,
                     use_bias=use_bias,
-                    kernel_constraint=constraints.max_norm(max_norm)
+                    kernel_constraint=constraints.max_norm(max_norm),
                 )
             )
         else:
@@ -65,7 +64,7 @@ class SimpleNetwork(Network):
                     input_dim=self.n_dim,
                     use_bias=use_bias,
                     W_constraint=constraints.NonNeg(),
-                    kernel_constraint=constraints.max_norm(max_norm)
+                    kernel_constraint=constraints.max_norm(max_norm),
                 )
             )
         if loss_func:
@@ -77,5 +76,3 @@ class SimpleNetwork(Network):
     @property
     def weights(self) -> np.array:
         return np.array([w[0] for w in self.model.get_weights()[0]])
-
-
