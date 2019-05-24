@@ -29,8 +29,9 @@ class Network:
     def train(
         self,
         split_ratio: float = 0.5,
-        keras_split: bool = False,
+        keras_split: bool = True,
         validate: bool = True,
+        epochs: int = 1,
         plot_history: bool = False,
         plot_acc: bool = False,
         plot_loss: bool = False,
@@ -38,7 +39,7 @@ class Network:
     ) -> None:
         """
         Split data, train the model, print weights, and graph the learning
-        :param quiet: quiet mod
+        :param epochs: number of epochs
         :param keras_split:
         :param split_ratio:
         :param validate: use validation set ?
@@ -49,20 +50,21 @@ class Network:
         """
         self.trained = True
         self.validation_set = validate
-        self.data.split(split_ratio)
+        if not keras_split:
+            self.data.split(split_ratio)
 
-        if not self.quiet:
-            print("Learning set : {} values".format(len(self.data.question_training)))
-            print("Training set : {} values".format(len(self.data.question_testing)))
+            if not self.quiet:
+                print("Learning set : {} values".format(len(self.data.question_training)))
+                print("Training set : {} values".format(len(self.data.question_testing)))
 
-        if not self.validation_set:
+        if self.validation_set:
             if keras_split:
                 history = self.model.fit(
                     self.data.question_data,
                     self.data.expected_data,
                     shuffle=False,
                     verbose=int(not self.quiet),
-                    epochs=1,
+                    epochs=epochs,
                     validation_split=split_ratio,
                 )
             else:
@@ -71,7 +73,7 @@ class Network:
                     self.data.expected_training,
                     shuffle=False,
                     verbose=int(not self.quiet),
-                    epochs=1,
+                    epochs=epochs,
                     validation_data=(
                         self.data.question_testing,
                         self.data.expected_testing,
@@ -83,7 +85,7 @@ class Network:
                 self.data.expected_data,
                 shuffle=False,
                 verbose=int(not self.quiet),
-                epochs=1,
+                epochs=epochs,
             )
 
         self.history = history.history

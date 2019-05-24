@@ -34,6 +34,7 @@ class SimpleNetwork(Network):
         loss_func: callable = None,
         split_ratio: float = 0.5,
         validate: bool = True,
+        epochs: int = 1,
     ):
         self.n_dim = n_dim
         if func:
@@ -71,7 +72,7 @@ class SimpleNetwork(Network):
             self.build(loss_func)
         else:
             self.build()
-        self.train(split_ratio, validate)
+        self.train(split_ratio, validate=validate, epochs=epochs)
 
     @property
     def weights(self) -> np.array:
