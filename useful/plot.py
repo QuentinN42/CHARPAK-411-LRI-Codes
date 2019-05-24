@@ -141,7 +141,7 @@ class To_Plot_Data:
 
     def plot(self):
         fig, ax = plt.subplots()
-        ax.set_ylim(0)
+        # ax.set_ylim(0)
         ax.set_xlabel(self.xlabel[self.variations].format(n=self.data[0]['n'], s=self.data[0]['size']))
         for i, tab in enumerate(self.to_plot):
             x = [l[self.variations] for l in tab]
@@ -153,8 +153,8 @@ class To_Plot_Data:
             c = self.colors[i]
 
             ax.plot(x, ave, '+' + c, label=tab[0].plot_label)
-            ax.plot(x, aveh, 'v' + c)
-            ax.plot(x, aveb, '^' + c)
+            ax.plot(x, aveh, 'v-' + c)
+            ax.plot(x, aveb, '^-' + c)
 
         ax.legend()
         fig.show()
@@ -177,6 +177,6 @@ class To_Plot_Data:
 
 
 if __name__ == '__main__':
-    data = To_Plot_Data("data/json/test_size1.json")
+    data = To_Plot_Data("data/json/test_n2.json")
     data.print_all()
     data.plot()
