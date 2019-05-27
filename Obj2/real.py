@@ -4,12 +4,14 @@ Real dataset from https://www.kaggle.com/harlfoxem/housesalesprediction
 @date: 23/05/2019
 @author: Quentin Lieumont
 """
+import math
 import numpy as np
 from matplotlib import pyplot as plt
 from useful.functions import get_json, write_json, history_plot, my_zip, std_err, average
 from useful.simpleNetwork import SimpleNetwork
 from useful.data import Data
 import os
+from scipy.optimize import curve_fit
 
 
 #%%  Class Houses
@@ -28,8 +30,8 @@ class Houses:
                 self.raw_data[i, self.header_from_str["yr_renovated"]] = \
                     self.raw_data[i, self.header_from_str["yr_built"]]
 
-        self.raw_data = self.raw_data[:, :-5]
-        self.raw_data = np.delete(self.raw_data, (7, 12), 1)
+        # self.raw_data = self.raw_data[:, :-5]
+        # self.raw_data = np.delete(self.raw_data, (7, 12), 1)
         self.norm_data: np.ndarray = self.raw_data / np.linalg.norm(self.raw_data)
 
     def __getitem__(self, item):
@@ -48,11 +50,14 @@ class Houses:
         else:
             raise AttributeError(f"Unrecognised data type : {type(item)}")
 
-    def color_scatter(self, c, norm: bool = False) -> plt.figure:
+    def color_scatter(self, c, xy=None, norm: bool = False) -> plt.figure:
         fig, ax = plt.subplots()
-        cm = ax.scatter(self.lat, self.long, s=8, c=self[c] if not norm else self(c))
-        ax.set_xlabel("Latitude")
-        ax.set_ylabel("Longitude")
+        if xy:
+            cm = ax.scatter(xy[0], xy[1], s=8, c=self[c] if not norm else self(c))
+        else:
+            cm = ax.scatter(self.lat, self.long, s=8, c=self[c] if not norm else self(c))
+            ax.set_xlabel("Latitude")
+            ax.set_ylabel("Longitude")
         fig.colorbar(cm)
         fig.suptitle(
             f"{c if type(c) is not int else self.header_from_int[c]} \
@@ -61,6 +66,14 @@ class Houses:
         fig.tight_layout()
 
         return fig
+
+    def plot_all_f_price(self):
+        for i in range(len(self.raw_data[0])):
+            fig, ax = plt.subplots()
+            ax.plot(self[i], self[0], '+')
+            ax.ylabel("Price")
+            ax.xlabel(self.header_from_int[i])
+            fig.show()
 
     # ======================== # Properties # ======================== #
 
@@ -188,19 +201,89 @@ def weights_from_file(n: slice = -1, labels_link: str = None, folder: str = "dat
     return fig
 
 
+#%%  Regress func
+
+
+def fit(func, x, y):
+    param, pcov = curve_fit(func, x, y, maxfev=1000)
+
+    pred = func(x, *param)
+
+    R2 = 1 - np.var(pred - y)/np.var(y)
+
+    return R2
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+class Regress_func:
+    act: bool = True
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError('Abstract class')
+
+
+class deg0(Regress_func):
+    def __call__(self, x, a):
+        return a
+
+
+class deg1(Regress_func):
+    def __call__(self, x, a, b):
+        return a*x+b
+
+
+class deg2(Regress_func):
+    def __call__(self, x, a, b, c):
+        return a*x**2+b*x+c
+
+
+class log(Regress_func):
+    def __call__(self, x, a, b):
+        return a*np.log(b*x)
+
+
+class sigm(Regress_func):
+    def __call__(self, x, a, b):
+        return a*sigmoid(b*x)
+
+
 #%%  Main
 
 
 if __name__ == "__main__":
     link = "https://www.kaggle.com/harlfoxem/housesalesprediction"
     print(f"Data from {link}.")
-    s = slice(None)
+
+    """
+    s = slice(6, None)
     history_from_file(
-        folder="data/Obj2/real/remove1",
+        folder="data/Obj2/real/default",
         n=s
     ).show()
     weights_from_file(
-        folder="data/Obj2/real/remove1",
+        folder="data/Obj2/real/default",
         n=s,
         labels_link="learning_data/kc_house/header_remove1.json"
     ).show()
+    """
+
+    h = Houses("learning_data/kc_house")
+    fs = {f.__name__: f() for f in Regress_func.__subclasses__() if f.act == True}
+
+    li = list(range(len(h.raw_data[0])))[1:]
+    for i in li:
+        # for j in [e for e in li if e != i]:
+        j = 0
+        for name, f in fs.items():
+            # print(h[i].size, '/', h[j].size)
+            try:
+                r2 = fit(f, h[i], h[j])
+            except RuntimeError as e:
+                # print(name, ': Error:', e)
+                pass
+            else:
+                if r2 > 0.1:
+                    print(f"{h.header_from_int[j]} | {h.header_from_int[i]} | {name} | {r2}")
