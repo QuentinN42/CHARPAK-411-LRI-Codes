@@ -1,0 +1,16 @@
+[
+  "id",
+  "date",
+  "price",
+  "bedrooms",
+  "bathrooms",
+  "sqft_living",
+  "sqft_lot",
+  "floors",
+  "waterfront",
+  "condition",
+  "grade",
+  "sqft_above",
+  "sqft_basement",
+  "yr_renovated"
+]

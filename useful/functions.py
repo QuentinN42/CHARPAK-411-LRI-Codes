@@ -178,7 +178,7 @@ def plot_3d(x, y, expected, result) -> plt:
     return plt
 
 
-def history_plot(history: dict, key: str, validation_set: bool) -> plt.Figure:
+def history_plot(history: dict or list, key: str, validation_set: bool) -> plt.Figure:
     """
     plot the learning history
     :param history: data
@@ -187,9 +187,31 @@ def history_plot(history: dict, key: str, validation_set: bool) -> plt.Figure:
     :return:
     """
     fig, ax = plt.subplots()
-    ax.plot(history[key], '-', label="Train")
-    if validation_set:
-        ax.plot(history["val_" + key], '-', label="Test")
+    if type(history) is dict:
+        ax.plot(history[key], '-', label="Train")
+        if validation_set:
+            ax.plot(history["val_" + key], '-', label="Test")
+    elif type(history) is list:
+        key_h = my_zip([h[key] for h in history])
+        print(key_h)
+        key_av = list(map(average, key_h))
+        key_er = list(map(std_err, key_h))
+        key_avh = [key_av[i] + key_er[i] for i in range(len(key_av))]
+        key_avb = [key_av[i] - key_er[i] for i in range(len(key_av))]
+        ax.plot(key_av, '-b', label="Train")
+        ax.plot(key_avh, 'vb')
+        ax.plot(key_avb, '^b')
+        if validation_set:
+            val_key_h = my_zip([h["val_" + key] for h in history])
+            val_key_av = list(map(average, val_key_h))
+            val_key_er = list(map(std_err, val_key_h))
+            val_key_avh = [val_key_av[i] + val_key_er[i] for i in range(len(key_av))]
+            val_key_avb = [val_key_av[i] - val_key_er[i] for i in range(len(key_av))]
+            ax.plot(val_key_av, '-', label="Test", color='orange')
+            ax.plot(val_key_avh, 'v', color='orange')
+            ax.plot(val_key_avb, '^', color='orange')
+    else:
+        raise AttributeError(f'history type error: {type(history)} with value {history}')
     ax.set_title("Model " + key)
     ax.set_ylabel(key.capitalize())
     ax.set_xlabel("Epoch")

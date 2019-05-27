@@ -113,21 +113,37 @@ def build(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2/re
         write_json(f"{save_folder}/weights{_id}.json", net.weights.tolist())
 
 
-def history_from_file(n: int = -1) -> plt.Figure:
+def history_from_file(n: int = -1, folder: str = "data/Obj2/real/default") -> plt.Figure:
     """
     Plot form data/Obj2/real/...n.json
+    :param folder: folder with lossXX.json file
     :param n: data index if -1 the last index is returned
     :return:
     """
-    _id = list(range(int(len(os.listdir('data/Obj2/real')) / 3)))[n]
-    dico = {
-        "loss": get_json(f"data/Obj2/real/loss{_id}.json"),
-        "val_loss": get_json(f"data/Obj2/real/val_loss{_id}.json")
-    }
-    return history_plot(dico, "loss", True)
+    if type(n) is int:
+        n: int
+        _id = list(range(int(len(os.listdir(folder)) / 3)))[n]
+        dico = {
+            "loss": get_json(f"{folder}/loss{_id}.json"),
+            "val_loss": get_json(f"{folder}/val_loss{_id}.json")
+        }
+        return history_plot(dico, "loss", True)
+
+    elif type(n) is slice:
+        _ids = list(range(int(len(os.listdir(folder)) / 3)))[n]
+        dicos = [
+            {
+                "loss": get_json(f"{folder}/loss{_id}.json"),
+                "val_loss": get_json(f"{folder}/val_loss{_id}.json")
+            }
+            for _id in _ids
+        ]
+        return history_plot(dicos, "loss", True)
+    else:
+        raise AttributeError(f'n type error: {type(n)} with value {n}')
 
 
-def weights_from_file(n: list = -1, labels_link: str = None, folder: str = "data/Obj2/real/default") -> plt.Figure:
+def weights_from_file(n: slice = -1, labels_link: str = None, folder: str = "data/Obj2/real/default") -> plt.Figure:
     """
     Plot form data/Obj2/real/...n.json
     :param folder: folder with weightsXX.json file
@@ -148,8 +164,9 @@ def weights_from_file(n: list = -1, labels_link: str = None, folder: str = "data
             norm_weights_a,
             color=['red' if e < 0 else 'blue' for e in norm_weights]
         )
-    elif type(n) in [list, np.ndarray, tuple]:
-        _ids = [list(range(int(len(os.listdir(folder)) / 3)))[i] for i in n]
+
+    elif type(n) is slice:
+        _ids = list(range(int(len(os.listdir(folder)) / 3)))[n]
         weightss = my_zip([get_json(f"{folder}/weights{_id}.json") for _id in _ids])
         list_n = list(range(len(weightss)))
         avs = list(map(average, weightss))
@@ -177,9 +194,13 @@ def weights_from_file(n: list = -1, labels_link: str = None, folder: str = "data
 if __name__ == "__main__":
     link = "https://www.kaggle.com/harlfoxem/housesalesprediction"
     print(f"Data from {link}.")
-    """
-    weights_from_file(
-        list(range(6, 105)),
-        labels_link="learning_data/kc_house/header.json"
+    s = slice(None)
+    history_from_file(
+        folder="data/Obj2/real/remove1",
+        n=s
     ).show()
-    """
+    weights_from_file(
+        folder="data/Obj2/real/remove1",
+        n=s,
+        labels_link="learning_data/kc_house/header_remove1.json"
+    ).show()
