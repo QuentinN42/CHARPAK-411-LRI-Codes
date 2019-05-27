@@ -16,26 +16,21 @@ import os
 
 
 class Houses:
-    def __init__(self, link):
+    def __init__(self, link, debug: bool = False):
         self.header_from_int = {i: e for i, e in enumerate(get_json(link + '/header.json')[2:])}
         self.header_from_str = {v: k for k, v in self.header_from_int.items()}
-
+        if debug:
+            for k, v in self.header_from_str.items():
+                print(k, v)
         self.raw_data: np.ndarray = np.genfromtxt(link + '/raw.csv', delimiter=',')[:, 2:]
         for i in range(len(self.raw_data[:, self.header_from_str["yr_renovated"]])):
             if self.raw_data[i, self.header_from_str["yr_renovated"]] == 0:
                 self.raw_data[i, self.header_from_str["yr_renovated"]] = \
                     self.raw_data[i, self.header_from_str["yr_built"]]
 
+        self.raw_data = self.raw_data[:, :-5]
+        self.raw_data = np.delete(self.raw_data, (7, 12), 1)
         self.norm_data: np.ndarray = self.raw_data / np.linalg.norm(self.raw_data)
-        """
-        np.array([
-            np.array([
-                (self.raw_data[j, i] - min(self.raw_data[:, i]))/(max(self.raw_data[:, i]) - min(self.raw_data[:, i]))
-                for j in range(len(self[i]))
-            ])
-            for i in range(len(self.raw_data))
-        ])
-        """
 
     def __getitem__(self, item):
         if type(item) is str:
@@ -96,15 +91,26 @@ class HouseLearner(SimpleNetwork):
 #%%  Main functions
 
 
-def build(n_epochs: int = 10, n_build: int = 1):
+def build(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2/real/default"):
+    """
+    Build and save learning
+    :param n_epochs:
+    :param n_build:
+    :param save_folder: folder to save the file
+    :return:
+    """
+    if os.path.isdir(save_folder):
+        print(f"Ready to save {n_build} files in {save_folder}")
+    else:
+        raise FileExistsError(f"Path {save_folder} not found or not a directory !")
     for n in range(n_build):
         print(f"Bluid number {n+1} over {n_build} :")
         h = Houses("learning_data/kc_house")
         net = HouseLearner(h, epochs=n_epochs)
-        _id = int(len(os.listdir('data/Obj2/real'))/3)
-        write_json(f"data/Obj2/real/val_loss{_id}.json", net.history['val_loss'])
-        write_json(f"data/Obj2/real/loss{_id}.json", net.history['loss'])
-        write_json(f"data/Obj2/real/weights{_id}.json", net.weights.tolist())
+        _id = int(len(os.listdir(save_folder))/3)
+        write_json(f"{save_folder}/val_loss{_id}.json", net.history['val_loss'])
+        write_json(f"{save_folder}/loss{_id}.json", net.history['loss'])
+        write_json(f"{save_folder}/weights{_id}.json", net.weights.tolist())
 
 
 def history_from_file(n: int = -1) -> plt.Figure:
@@ -121,17 +127,19 @@ def history_from_file(n: int = -1) -> plt.Figure:
     return history_plot(dico, "loss", True)
 
 
-def weights_from_file(n: list = -1, labels_link: str = None) -> plt.Figure:
+def weights_from_file(n: list = -1, labels_link: str = None, folder: str = "data/Obj2/real/default") -> plt.Figure:
     """
     Plot form data/Obj2/real/...n.json
+    :param folder: folder with weightsXX.json file
     :param labels_link: link to show labels
     :param n: data index if -1 the last index is returned
     :return:
     """
     fig, ax = plt.subplots()
     if type(n) is int:
-        _id = list(range(int(len(os.listdir('data/Obj2/real')) / 3)))[n]
-        weights = get_json(f"data/Obj2/real/weights{_id}.json")
+        n: int
+        _id = list(range(int(len(os.listdir(folder)) / 3)))[n]
+        weights = get_json(f"{folder}/weights{_id}.json")
         list_n = list(range(len(weights)))
         norm_weights = [e / len(weights) for e in weights]
         norm_weights_a = [abs(e) for e in norm_weights]
@@ -141,8 +149,8 @@ def weights_from_file(n: list = -1, labels_link: str = None) -> plt.Figure:
             color=['red' if e < 0 else 'blue' for e in norm_weights]
         )
     elif type(n) in [list, np.ndarray, tuple]:
-        _ids = [list(range(int(len(os.listdir('data/Obj2/real')) / 3)))[i] for i in n]
-        weightss = my_zip([get_json(f"data/Obj2/real/weights{_id}.json") for _id in _ids])
+        _ids = [list(range(int(len(os.listdir(folder)) / 3)))[i] for i in n]
+        weightss = my_zip([get_json(f"{folder}/weights{_id}.json") for _id in _ids])
         list_n = list(range(len(weightss)))
         avs = list(map(average, weightss))
         errs = list(map(std_err, weightss))
@@ -169,8 +177,9 @@ def weights_from_file(n: list = -1, labels_link: str = None) -> plt.Figure:
 if __name__ == "__main__":
     link = "https://www.kaggle.com/harlfoxem/housesalesprediction"
     print(f"Data from {link}.")
-    build(n_epochs=100)
+    """
     weights_from_file(
-        list(range(5, 15)),
+        list(range(6, 105)),
         labels_link="learning_data/kc_house/header.json"
     ).show()
+    """
