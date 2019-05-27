@@ -271,7 +271,7 @@ if __name__ == "__main__":
     """
 
     h = Houses("learning_data/kc_house")
-    fs = {f.__name__: f() for f in Regress_func.__subclasses__() if f.act == True}
+    fs = {f.__name__: f() for f in Regress_func.__subclasses__() if f.act is True}
 
     li = list(range(len(h.raw_data[0])))[1:]
     for i in li:
