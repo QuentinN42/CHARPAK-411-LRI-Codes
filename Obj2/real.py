@@ -6,7 +6,7 @@ Real dataset from https://www.kaggle.com/harlfoxem/housesalesprediction
 """
 import numpy as np
 from matplotlib import pyplot as plt
-from useful.functions import get_json, write_json
+from useful.functions import get_json, write_json, history_plot, my_zip, std_err, average
 from useful.simpleNetwork import SimpleNetwork
 from useful.data import Data
 import os
@@ -21,6 +21,10 @@ class Houses:
         self.header_from_str = {v: k for k, v in self.header_from_int.items()}
 
         self.raw_data: np.ndarray = np.genfromtxt(link + '/raw.csv', delimiter=',')[:, 2:]
+        for i in range(len(self.raw_data[:, self.header_from_str["yr_renovated"]])):
+            if self.raw_data[i, self.header_from_str["yr_renovated"]] == 0:
+                self.raw_data[i, self.header_from_str["yr_renovated"]] = \
+                    self.raw_data[i, self.header_from_str["yr_built"]]
 
         self.norm_data: np.ndarray = self.raw_data / np.linalg.norm(self.raw_data)
         """
@@ -78,31 +82,95 @@ class Houses:
 
 
 class HouseLearner(SimpleNetwork):
-    def __init__(self, houses: Houses, epochs: int = 10):
+    def __init__(self, houses: Houses, epochs: int = 10, q: bool = True):
         self.houses = houses
         d: Data = Data(tab=houses.norm_data[:, 1:], expected=houses("price"))
         super().__init__(
             data=d,
             n_dim=len(houses.norm_data[0, 1:]),
             epochs=epochs,
-            quiet=False
+            quiet=q
         )
+
+
+#%%  Main functions
+
+
+def build(n_epochs: int = 10, n_build: int = 1):
+    for n in range(n_build):
+        print(f"Bluid number {n+1} over {n_build} :")
+        h = Houses("learning_data/kc_house")
+        net = HouseLearner(h, epochs=n_epochs)
+        _id = int(len(os.listdir('data/Obj2/real'))/3)
+        write_json(f"data/Obj2/real/val_loss{_id}.json", net.history['val_loss'])
+        write_json(f"data/Obj2/real/loss{_id}.json", net.history['loss'])
+        write_json(f"data/Obj2/real/weights{_id}.json", net.weights.tolist())
+
+
+def history_from_file(n: int = -1) -> plt.Figure:
+    """
+    Plot form data/Obj2/real/...n.json
+    :param n: data index if -1 the last index is returned
+    :return:
+    """
+    _id = list(range(int(len(os.listdir('data/Obj2/real')) / 3)))[n]
+    dico = {
+        "loss": get_json(f"data/Obj2/real/loss{_id}.json"),
+        "val_loss": get_json(f"data/Obj2/real/val_loss{_id}.json")
+    }
+    return history_plot(dico, "loss", True)
+
+
+def weights_from_file(n: list = -1, labels_link: str = None) -> plt.Figure:
+    """
+    Plot form data/Obj2/real/...n.json
+    :param labels_link: link to show labels
+    :param n: data index if -1 the last index is returned
+    :return:
+    """
+    fig, ax = plt.subplots()
+    if type(n) is int:
+        _id = list(range(int(len(os.listdir('data/Obj2/real')) / 3)))[n]
+        weights = get_json(f"data/Obj2/real/weights{_id}.json")
+        list_n = list(range(len(weights)))
+        norm_weights = [e / len(weights) for e in weights]
+        norm_weights_a = [abs(e) for e in norm_weights]
+        ax.bar(
+            list_n,
+            norm_weights_a,
+            color=['red' if e < 0 else 'blue' for e in norm_weights]
+        )
+    elif type(n) in [list, np.ndarray, tuple]:
+        _ids = [list(range(int(len(os.listdir('data/Obj2/real')) / 3)))[i] for i in n]
+        weightss = my_zip([get_json(f"data/Obj2/real/weights{_id}.json") for _id in _ids])
+        list_n = list(range(len(weightss)))
+        avs = list(map(average, weightss))
+        errs = list(map(std_err, weightss))
+        ax.bar(
+            list_n,
+            [abs(e) for e in avs],
+            color=['red' if e < 0 else 'blue' for e in avs],
+            yerr=errs
+        )
+    else:
+        raise AttributeError(f'n type error: {type(n)} with value {n}')
+
+    if labels_link:
+        names = get_json(labels_link)[3:]
+
+        ax.set_xticks(list_n)
+        ax.set_xticklabels(names, rotation=90)
+    return fig
 
 
 #%%  Main
 
 
-def build():
-    h = Houses("learning_data/kc_house")
-    net = HouseLearner(h)
-    # net.graph_history('loss')
-    _id = int(len(os.listdir('data/Obj2/real'))/2)
-    print(_id)
-    write_json(f"data/Obj2/real/val_loss{_id}.json", net.history['val_loss'])
-    write_json(f"data/Obj2/real/loss{_id}.json", net.history['loss'])
-
-
 if __name__ == "__main__":
     link = "https://www.kaggle.com/harlfoxem/housesalesprediction"
     print(f"Data from {link}.")
-    build()
+    build(n_epochs=100)
+    weights_from_file(
+        list(range(5, 15)),
+        labels_link="learning_data/kc_house/header.json"
+    ).show()

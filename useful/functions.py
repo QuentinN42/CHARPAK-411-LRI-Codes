@@ -126,6 +126,10 @@ def std_err(tab: iter):
     return sqrt(e / len(tab))
 
 
+def my_zip(t):
+    return [[e[i] for e in t] for i in range(len(t[0]))]
+
+
 def plot_color(
     z: iter, x: iter = None, y: iter = None, nb_ticks: int = 5, plot_title: str = ""
 ) -> plt:
@@ -174,7 +178,7 @@ def plot_3d(x, y, expected, result) -> plt:
     return plt
 
 
-def history_plot(history: dict, key: str, validation_set: bool) -> plt:
+def history_plot(history: dict, key: str, validation_set: bool) -> plt.Figure:
     """
     plot the learning history
     :param history: data
@@ -182,11 +186,12 @@ def history_plot(history: dict, key: str, validation_set: bool) -> plt:
     :param validation_set: if the validation set has been used
     :return:
     """
-    plt.plot(history[key], label="Train")
+    fig, ax = plt.subplots()
+    ax.plot(history[key], '-', label="Train")
     if validation_set:
-        plt.plot(history["val_" + key], label="Test")
-    plt.title("Model " + key)
-    plt.ylabel(key.capitalize())
-    plt.xlabel("Epoch")
-    plt.legend(loc="upper left")
-    return plt
+        ax.plot(history["val_" + key], '-', label="Test")
+    ax.set_title("Model " + key)
+    ax.set_ylabel(key.capitalize())
+    ax.set_xlabel("Epoch")
+    ax.legend()
+    return fig
