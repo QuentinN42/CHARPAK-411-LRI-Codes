@@ -34,10 +34,9 @@ class Houses:
         # self.raw_data = np.delete(self.raw_data, (7, 12), 1)
         self.norm_data: np.ndarray = np.transpose(np.array(
             [
-                (np.array(t) - min(t)) / (max(t) - min(t))
+                (np.array(t)-min(t))/(max(t)-min(t))
                 for t in np.transpose(self.raw_data).tolist()
             ]
-        ))
 
     def __getitem__(self, item):
         if type(item) is str:
@@ -312,17 +311,46 @@ if __name__ == "__main__":
     fs = {f.__name__: f() for f in Regress_func.__subclasses__() if f.act is True}
 
     li = list(range(len(h.raw_data[0])))[1:]
+
+    min_dist = 0.0005
+
     for i in li:
         max_name: str = ""
         max_r2: float = 0.
         max_param = None
         max_f = None
+
+        var = h(i)
+        prices = h(0)
+        data = [np.array(e) for e in np.transpose((var, prices)).tolist()]
+        data2 = []
+
+        while data:
+            pop = False
+            k = 1
+
+            while k < len(data):
+                if (data[0] - data[k]) @ (data[0] - data[k]) <= min_dist:
+                    data2.append(data.pop(k))
+                    pop = True
+                else:
+                    k += 1
+
+            if pop:
+                data2.append(data.pop(0))
+            else:
+                data.pop(0)
+
+        var = np.array([e[0] for e in data2])
+        prices = np.array([e[1] for e in data2])
+
         fig, ax = plt.subplots()
-        ax.plot(h[i], h(0), '+')
+        ax.plot(var, prices, '+')
+
         for name, f in fs.items():
             # print(h[i].size, '/', h[j].size)
             try:
-                r2, vals = fit(f, h[i], h(0))
+                r2, vals = fit(f, var, prices)
             except RuntimeWarning:
                 pass
             except RuntimeError as e:
@@ -336,9 +364,10 @@ if __name__ == "__main__":
                         max_param = vals
                         max_f = f
                     # print(f"{h.header_from_int[0]} | {h.header_from_int[i]} | {name} | {r2}")
+
         if max_r2 != 0.:
             print(f"For {h.header_from_int[i]}: Best function {max_name} with R2={max_r2}")
-            x = np.linspace(min(h[i]), max(h[i]))
+            x = np.linspace(min(var), max(var))
             ax.plot(x, max_f(x, *max_param), '-', label=f"{max_name}, R2={str(max_r2)[:4]}")
             ax.set_ylabel("Price")
             ax.set_xlabel(h.header_from_int[i])
