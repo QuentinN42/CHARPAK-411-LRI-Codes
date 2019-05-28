@@ -32,7 +32,12 @@ class Houses:
 
         # self.raw_data = self.raw_data[:, :-5]
         # self.raw_data = np.delete(self.raw_data, (7, 12), 1)
-        self.norm_data: np.ndarray = self.raw_data / np.linalg.norm(self.raw_data)
+        self.norm_data: np.ndarray = np.transpose(np.array(
+            [
+                (np.array(t)-min(t))/(max(t)-min(t))
+                for t in np.transpose(self.raw_data).tolist()
+            ]
+        ))
 
     def __getitem__(self, item):
         if type(item) is str:
@@ -306,18 +311,43 @@ if __name__ == "__main__":
     h = Houses("learning_data/kc_house")
     fs = {f.__name__: f() for f in Regress_func.__subclasses__() if f.act is True}
 
+    prices = h(0)
+    length = len(prices)
     li = list(range(len(h.raw_data[0])))[1:]
+
+    i = 1
+    var = h(i)
+    data = sorted([np.array(e) for e in np.transpose((var, prices)).tolist()], key=lambda e: np.sqrt(e @ e))
+
+    print(data) 
+
+    q1x, q1y = data[int(length/4)]
+    q2x, q2y = data[int(length/2)]
+    q3x, q3y = data[int(3*length/4)]
+
+    fig, ax = plt.subplots()
+    ax.plot(var, prices, '+')
+    ax.plot(q1x, q1y, 'or')
+    ax.plot(q2x, q2y, 'og')
+    ax.plot(q3x, q3y, 'ok')
+
+    ax.set_ylabel("Price")
+    ax.set_xlabel(h.header_from_int[i])
+    leg: plt.legend = ax.legend()
+    fig.show()
+    """
     for i in li:
         max_name: str = ""
         max_r2: float = 0.
         max_param = None
         max_f = None
         fig, ax = plt.subplots()
-        ax.plot(h[i], h(0), '+')
+        ax.plot(h[i], prices, '+')
+
         for name, f in fs.items():
             # print(h[i].size, '/', h[j].size)
             try:
-                r2, vals = fit(f, h[i], h(0))
+                r2, vals = fit(f, h[i], prices)
             except RuntimeWarning:
                 pass
             except RuntimeError as e:
@@ -341,3 +371,4 @@ if __name__ == "__main__":
             fig.show()
         else:
             print(f"No function found for {h.header_from_int[i]}")
+"""
