@@ -32,7 +32,12 @@ class Houses:
 
         # self.raw_data = self.raw_data[:, :-5]
         # self.raw_data = np.delete(self.raw_data, (7, 12), 1)
-        self.norm_data: np.ndarray = self.raw_data / np.linalg.norm(self.raw_data)
+        self.norm_data: np.ndarray = np.transpose(np.array(
+            [
+                (np.array(t) - min(t)) / (max(t) - min(t))
+                for t in np.transpose(self.raw_data).tolist()
+            ]
+        ))
 
     def __getitem__(self, item):
         if type(item) is str:
