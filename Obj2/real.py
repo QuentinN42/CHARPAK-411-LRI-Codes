@@ -311,60 +311,47 @@ if __name__ == "__main__":
     h = Houses("learning_data/kc_house")
     fs = {f.__name__: f() for f in Regress_func.__subclasses__() if f.act is True}
 
-    prices = h(0)
-    length = len(prices)
     li = list(range(len(h.raw_data[0])))[1:]
 
-    i = 1
-    min_dist = 0.01
-    var = h(i)
-    data = sorted([np.array(e) for e in np.transpose((var, prices)).tolist()], key=lambda e: np.linalg.norm(e))
+    min_dist = 0.0005
 
-    data2 = []
-    prec = -1
-
-    while data:
-        if 100-int(len(data)/length*100) > prec:
-            prec = 100-int(len(data)/length*100)
-            print(prec)
-
-        k = 1
-        length_k = len(data)
-        poped = False
-
-        while k < length_k:
-            if data[0] @ data[k] <= min_dist:
-                data2.append(data.pop(k))
-                data2.append(data.pop(0))
-                poped = True
-                break
-            else:
-                k += 1
-        if not poped:
-            data.pop(0)
-
-    fig, ax = plt.subplots()
-    ax.plot(var, prices, '+b')
-    ax.plot([e[0] for e in data2], [e[1] for e in data2], '+k')
-
-    ax.set_ylabel("Price")
-    ax.set_xlabel(h.header_from_int[i])
-    leg: plt.legend = ax.legend()
-    fig.show()
-
-    """
     for i in li:
         max_name: str = ""
         max_r2: float = 0.
         max_param = None
         max_f = None
+
+        var = h(i)
+        prices = h(0)
+        data = [np.array(e) for e in np.transpose((var, prices)).tolist()]
+        data2 = []
+
+        while data:
+            pop = False
+            k = 1
+
+            while k < len(data):
+                if (data[0] - data[k]) @ (data[0] - data[k]) <= min_dist:
+                    data2.append(data.pop(k))
+                    pop = True
+                else:
+                    k += 1
+
+            if pop:
+                data2.append(data.pop(0))
+            else:
+                data.pop(0)
+
+        var = np.array([e[0] for e in data2])
+        prices = np.array([e[1] for e in data2])
+
         fig, ax = plt.subplots()
-        ax.plot(h[i], prices, '+')
+        ax.plot(var, prices, '+')
 
         for name, f in fs.items():
             # print(h[i].size, '/', h[j].size)
             try:
-                r2, vals = fit(f, h[i], prices)
+                r2, vals = fit(f, var, prices)
             except RuntimeWarning:
                 pass
             except RuntimeError as e:
@@ -378,9 +365,10 @@ if __name__ == "__main__":
                         max_param = vals
                         max_f = f
                     # print(f"{h.header_from_int[0]} | {h.header_from_int[i]} | {name} | {r2}")
+
         if max_r2 != 0.:
             print(f"For {h.header_from_int[i]}: Best function {max_name} with R2={max_r2}")
-            x = np.linspace(min(h[i]), max(h[i]))
+            x = np.linspace(min(var), max(var))
             ax.plot(x, max_f(x, *max_param), '-', label=f"{max_name}, R2={str(max_r2)[:4]}")
             ax.set_ylabel("Price")
             ax.set_xlabel(h.header_from_int[i])
@@ -388,4 +376,3 @@ if __name__ == "__main__":
             fig.show()
         else:
             print(f"No function found for {h.header_from_int[i]}")
-"""
