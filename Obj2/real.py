@@ -311,6 +311,21 @@ if __name__ == "__main__":
     h = Houses("learning_data/kc_house")
     fs = {f.__name__: f() for f in Regress_func.__subclasses__() if f.act is True}
 
+    i = 1
+    f = fs["deg1"]
+    r2, vals = fit(f, h(i), h(0))
+
+    fig, ax = plt.subplots()
+    ax.plot(h(i), h(0), '+')
+    
+    x = np.linspace(min(h(i)), max(h(i)))
+    ax.plot(x, f(x, *vals), '-', label=f"P(X), R2={str(r2)[:4]}")
+    ax.set_ylabel("Price")
+    ax.set_xlabel(h.header_from_int[i])
+    leg: plt.legend = ax.legend()
+    fig.show()
+
+    """
     li = list(range(len(h.raw_data[0])))[1:]
     for i in li:
         max_name: str = ""
@@ -320,7 +335,6 @@ if __name__ == "__main__":
         fig, ax = plt.subplots()
         ax.plot(h[i], h(0), '+')
         for name, f in fs.items():
-            # print(h[i].size, '/', h[j].size)
             try:
                 r2, vals = fit(f, h[i], h(0))
             except RuntimeWarning:
@@ -346,3 +360,4 @@ if __name__ == "__main__":
             fig.show()
         else:
             print(f"No function found for {h.header_from_int[i]}")
+"""
