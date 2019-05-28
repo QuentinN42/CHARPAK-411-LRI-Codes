@@ -316,33 +316,42 @@ if __name__ == "__main__":
     li = list(range(len(h.raw_data[0])))[1:]
 
     i = 1
+    min_dist = 0.01
     var = h(i)
-    data = np.array(sorted([np.array(e) for e in np.transpose((var, prices)).tolist()], key=lambda e: np.linalg.norm(e)))
+    data = sorted([np.array(e) for e in np.transpose((var, prices)).tolist()], key=lambda e: np.linalg.norm(e))
 
     data2 = []
     prec = -1
-    for j, e in enumerate(data):
-        if int(j*100/length) > prec:
-            prec = int(j*100/length)
-            print(prec)
-        if np.linalg.norm(min(np.abs(data - e), key=lambda e: np.linalg.norm(e) if np.linalg.norm(e) != 0 else 1)) < 0.1:
-            data2.append(e)
 
-    q1x, q1y = data[int(length/4)]
-    q2x, q2y = data[int(length/2)]
-    q3x, q3y = data[int(3*length/4)]
+    while data:
+        if 100-int(len(data)/length*100) > prec:
+            prec = 100-int(len(data)/length*100)
+            print(prec)
+
+        k = 1
+        length_k = len(data)
+        poped = False
+
+        while k < length_k:
+            if data[0] @ data[k] <= min_dist:
+                data2.append(data.pop(k))
+                data2.append(data.pop(0))
+                poped = True
+                break
+            else:
+                k += 1
+        if not poped:
+            data.pop(0)
 
     fig, ax = plt.subplots()
     ax.plot(var, prices, '+b')
     ax.plot([e[0] for e in data2], [e[1] for e in data2], '+k')
-    # ax.plot(q1x, q1y, 'or')
-    # ax.plot(q2x, q2y, 'og')
-    # ax.plot(q3x, q3y, 'o')
 
     ax.set_ylabel("Price")
     ax.set_xlabel(h.header_from_int[i])
     leg: plt.legend = ax.legend()
     fig.show()
+
     """
     for i in li:
         max_name: str = ""
