@@ -71,8 +71,8 @@ class Houses:
         for i in range(len(self.raw_data[0])):
             fig, ax = plt.subplots()
             ax.plot(self[i], self[0], '+')
-            ax.ylabel("Price")
-            ax.xlabel(self.header_from_int[i])
+            ax.set_ylabel("Price")
+            ax.set_xlabel(self.header_from_int[i])
             fig.show()
 
     # ======================== # Properties # ======================== #
@@ -201,17 +201,17 @@ def weights_from_file(n: slice = -1, labels_link: str = None, folder: str = "dat
     return fig
 
 
-#%%  Regress func
+#%%  Regress abstract func
 
 
 def fit(func, x, y):
-    param, pcov = curve_fit(func, x, y, maxfev=1000)
+    param, pcov = curve_fit(func, x, y, maxfev=50000)
 
     pred = func(x, *param)
 
     R2 = 1 - np.var(pred - y)/np.var(y)
 
-    return R2
+    return R2, param
 
 
 def sigmoid(x):
@@ -223,6 +223,9 @@ class Regress_func:
 
     def __call__(self, *args, **kwargs):
         raise NotImplementedError('Abstract class')
+
+
+#%%  Regress func
 
 
 class deg0(Regress_func):
@@ -240,6 +243,31 @@ class deg2(Regress_func):
         return a*x**2+b*x+c
 
 
+class deg2_0(Regress_func):
+    def __call__(self, x, a, b, c):
+        return a*x**2+b*x
+
+
+class deg3(Regress_func):
+    def __call__(self, x, a, b, c, d):
+        return a*x**3 + b*x**2 + c*x + d
+
+
+class inv(Regress_func):
+    def __call__(self, x, a, b, c, d):
+        return (a*x+b)/(c*x+d)
+
+
+class e(Regress_func):
+    def __call__(self, x, a, b, c, d):
+        return a*np.exp(b*x+c)+d
+
+
+class root(Regress_func):
+    def __call__(self, x, a, b):
+        return np.sqrt(a*x+b)
+
+
 class log(Regress_func):
     def __call__(self, x, a, b):
         return a*np.log(b*x)
@@ -248,6 +276,11 @@ class log(Regress_func):
 class sigm(Regress_func):
     def __call__(self, x, a, b):
         return a*sigmoid(b*x)
+
+
+class gaussian(Regress_func):
+    def __call__(self, x, mu, sig):
+        return np.exp(-((x - mu)/sig)**2/2)
 
 
 #%%  Main
@@ -275,15 +308,36 @@ if __name__ == "__main__":
 
     li = list(range(len(h.raw_data[0])))[1:]
     for i in li:
-        # for j in [e for e in li if e != i]:
-        j = 0
+        max_name: str = ""
+        max_r2: float = 0.
+        max_param = None
+        max_f = None
+        fig, ax = plt.subplots()
+        ax.plot(h[i], h(0), '+')
         for name, f in fs.items():
             # print(h[i].size, '/', h[j].size)
             try:
-                r2 = fit(f, h[i], h[j])
+                r2, vals = fit(f, h[i], h(0))
+            except RuntimeWarning:
+                pass
             except RuntimeError as e:
                 # print(name, ': Error:', e)
                 pass
             else:
-                if r2 > 0.1:
-                    print(f"{h.header_from_int[j]} | {h.header_from_int[i]} | {name} | {r2}")
+                if r2 > 0.3:
+                    if r2 > max_r2:
+                        max_r2 = r2
+                        max_name = name
+                        max_param = vals
+                        max_f = f
+                    # print(f"{h.header_from_int[0]} | {h.header_from_int[i]} | {name} | {r2}")
+        if max_r2 != 0.:
+            print(f"For {h.header_from_int[i]}: Best function {max_name} with R2={max_r2}")
+            x = np.linspace(min(h[i]), max(h[i]))
+            ax.plot(x, max_f(x, *max_param), '-', label=f"{max_name}, R2={str(max_r2)[:4]}")
+            ax.set_ylabel("Price")
+            ax.set_xlabel(h.header_from_int[i])
+            leg: plt.legend = ax.legend()
+            fig.show()
+        else:
+            print(f"No function found for {h.header_from_int[i]}")
