@@ -187,106 +187,6 @@ class gaussian(Regress_func):
         return np.exp(-((x - mu) / sig) ** 2 / 2)
 
 
-# %%  Main functions
-
-
-def build(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2/real/default"):
-    """
-    Build and save learning
-    :param n_epochs:
-    :param n_build:
-    :param save_folder: folder to save the file
-    :return:
-    """
-    if os.path.isdir(save_folder):
-        print(f"Ready to save {n_build} files in {save_folder}")
-    else:
-        raise FileExistsError(f"Path {save_folder} not found or not a directory !")
-    for n in range(n_build):
-        print(f"Bluid number {n + 1} over {n_build} :")
-        h = Houses("learning_data/kc_house")
-        net = HouseLearner(h, epochs=n_epochs)
-        _id = int(len(os.listdir(save_folder)) / 3)
-        write_json(f"{save_folder}/val_loss{_id}.json", net.history['val_loss'])
-        write_json(f"{save_folder}/loss{_id}.json", net.history['loss'])
-        write_json(f"{save_folder}/weights{_id}.json", net.weights.tolist())
-
-
-def history_from_file(n: int = -1, folder: str = "data/Obj2/real/default") -> plt.Figure:
-    """
-    Plot form data/Obj2/real/...n.json
-    :param folder: folder with lossXX.json file
-    :param n: data index if -1 the last index is returned
-    :return:
-    """
-    if type(n) is int:
-        n: int
-        _id = list(range(int(len(os.listdir(folder)) / 3)))[n]
-        dico = {
-            "loss": get_json(f"{folder}/loss{_id}.json"),
-            "val_loss": get_json(f"{folder}/val_loss{_id}.json")
-        }
-        return history_plot(dico, "loss", True)
-
-    elif type(n) is slice:
-        _ids = list(range(int(len(os.listdir(folder)) / 3)))[n]
-        dicos = [
-            {
-                "loss": get_json(f"{folder}/loss{_id}.json"),
-                "val_loss": get_json(f"{folder}/val_loss{_id}.json")
-            }
-            for _id in _ids
-        ]
-        return history_plot(dicos, "loss", True)
-    else:
-        raise AttributeError(f'n type error: {type(n)} with value {n}')
-
-
-def weights_from_file(n: slice = -1, labels_link: str = None, folder: str = "data/Obj2/real/default") -> plt.Figure:
-    """
-    Plot form data/Obj2/real/...n.json
-    :param folder: folder with weightsXX.json file
-    :param labels_link: link to show labels
-    :param n: data index if -1 the last index is returned
-    :return:
-    """
-    fig, ax = plt.subplots()
-    if type(n) is int:
-        n: int
-        _id = list(range(int(len(os.listdir(folder)) / 3)))[n]
-        weights = get_json(f"{folder}/weights{_id}.json")
-        list_n = list(range(len(weights)))
-        norm_weights = [e / len(weights) for e in weights]
-        norm_weights_a = [abs(e) for e in norm_weights]
-        ax.bar(
-            list_n,
-            norm_weights_a,
-            color=['red' if e < 0 else 'blue' for e in norm_weights]
-        )
-
-    elif type(n) is slice:
-        _ids = list(range(int(len(os.listdir(folder)) / 3)))[n]
-        weightss = my_zip([get_json(f"{folder}/weights{_id}.json") for _id in _ids])
-        list_n = list(range(len(weightss)))
-        avs = list(map(average, weightss))
-        errs = list(map(std_err, weightss))
-        ax.bar(
-            list_n,
-            [abs(e) for e in avs],
-            color=['red' if e < 0 else 'blue' for e in avs],
-            yerr=errs
-        )
-    else:
-        raise AttributeError(f'n type error: {type(n)} with value {n}')
-
-    if labels_link:
-        names = get_json(labels_link)[3:]
-
-        ax.set_xticks(list_n)
-        ax.set_xticklabels(names, rotation=90)
-    return fig
-
-
 # %%  Utility regression
 
 
@@ -411,9 +311,160 @@ class Utilities:
         else:
             raise StopIteration
 
+    @property
+    def data(self) -> Data:
+        t = np.array([
+            np.array([
+                u(e)
+                for e in h(u.label)
+            ])
+            for u in self
+        ])
+        return Data(
+            tab=t,
+            expected=self.h("price")
+        )
+
     def show_plots(self):
         for u in self:
             u.plot().show()
+
+
+class HouseLearnerFromUtilities(SimpleNetwork):
+    def __init__(self, utilities: Utilities, epochs: int = 10, q: bool = True):
+        self.utilities = utilities
+        d: Data = self.utilities.data
+        super().__init__(
+            data=d,
+            n_dim=len(self.utilities),
+            epochs=epochs,
+            quiet=q
+        )
+
+# %%  Main functions
+
+
+def build(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2/real/default"):
+    """
+    Build and save learning
+    :param n_epochs:
+    :param n_build:
+    :param save_folder: folder to save the file
+    :return:
+    """
+    if os.path.isdir(save_folder):
+        print(f"Ready to save {n_build} files in {save_folder}")
+    else:
+        raise FileExistsError(f"Path {save_folder} not found or not a directory !")
+    for n in range(n_build):
+        print(f"Bluid number {n + 1} over {n_build} :")
+        h = Houses("learning_data/kc_house")
+        net = HouseLearner(h, epochs=n_epochs)
+        _id = int(len(os.listdir(save_folder)) / 3)
+        write_json(f"{save_folder}/val_loss{_id}.json", net.history['val_loss'])
+        write_json(f"{save_folder}/loss{_id}.json", net.history['loss'])
+        write_json(f"{save_folder}/weights{_id}.json", net.weights.tolist())
+
+
+def build_ut(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2/real/default"):
+    """
+    Build and save learning
+    :param n_epochs:
+    :param n_build:
+    :param save_folder: folder to save the file
+    :return:
+    """
+    if os.path.isdir(save_folder):
+        print(f"Ready to save {n_build} files in {save_folder}")
+    else:
+        raise FileExistsError(f"Path {save_folder} not found or not a directory !")
+
+    print("Building utilities")
+    ut = Utilities(Houses("learning_data/kc_house"))
+    print("Utilities built")
+
+    for n in range(n_build):
+        print(f"Bluid number {n + 1} over {n_build} :")
+        net = HouseLearnerFromUtilities(ut, epochs=n_epochs)
+        _id = int(len(os.listdir(save_folder)) / 3)
+        write_json(f"{save_folder}/val_loss{_id}.json", net.history['val_loss'])
+        write_json(f"{save_folder}/loss{_id}.json", net.history['loss'])
+        write_json(f"{save_folder}/weights{_id}.json", net.weights.tolist())
+
+
+def history_from_file(n: int = -1, folder: str = "data/Obj2/real/default") -> plt.Figure:
+    """
+    Plot form data/Obj2/real/...n.json
+    :param folder: folder with lossXX.json file
+    :param n: data index if -1 the last index is returned
+    :return:
+    """
+    if type(n) is int:
+        n: int
+        _id = list(range(int(len(os.listdir(folder)) / 3)))[n]
+        dico = {
+            "loss": get_json(f"{folder}/loss{_id}.json"),
+            "val_loss": get_json(f"{folder}/val_loss{_id}.json")
+        }
+        return history_plot(dico, "loss", True)
+
+    elif type(n) is slice:
+        _ids = list(range(int(len(os.listdir(folder)) / 3)))[n]
+        dicos = [
+            {
+                "loss": get_json(f"{folder}/loss{_id}.json"),
+                "val_loss": get_json(f"{folder}/val_loss{_id}.json")
+            }
+            for _id in _ids
+        ]
+        return history_plot(dicos, "loss", True)
+    else:
+        raise AttributeError(f'n type error: {type(n)} with value {n}')
+
+
+def weights_from_file(n: slice = -1, labels_link: str = None, folder: str = "data/Obj2/real/default") -> plt.Figure:
+    """
+    Plot form data/Obj2/real/...n.json
+    :param folder: folder with weightsXX.json file
+    :param labels_link: link to show labels
+    :param n: data index if -1 the last index is returned
+    :return:
+    """
+    fig, ax = plt.subplots()
+    if type(n) is int:
+        n: int
+        _id = list(range(int(len(os.listdir(folder)) / 3)))[n]
+        weights = get_json(f"{folder}/weights{_id}.json")
+        list_n = list(range(len(weights)))
+        norm_weights = [e / len(weights) for e in weights]
+        norm_weights_a = [abs(e) for e in norm_weights]
+        ax.bar(
+            list_n,
+            norm_weights_a,
+            color=['red' if e < 0 else 'blue' for e in norm_weights]
+        )
+
+    elif type(n) is slice:
+        _ids = list(range(int(len(os.listdir(folder)) / 3)))[n]
+        weightss = my_zip([get_json(f"{folder}/weights{_id}.json") for _id in _ids])
+        list_n = list(range(len(weightss)))
+        avs = list(map(average, weightss))
+        errs = list(map(std_err, weightss))
+        ax.bar(
+            list_n,
+            [abs(e) for e in avs],
+            color=['red' if e < 0 else 'blue' for e in avs],
+            yerr=errs
+        )
+    else:
+        raise AttributeError(f'n type error: {type(n)} with value {n}')
+
+    if labels_link:
+        names = get_json(labels_link)[3:]
+
+        ax.set_xticks(list_n)
+        ax.set_xticklabels(names, rotation=90)
+    return fig
 
 
 # %%  Main
