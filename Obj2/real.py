@@ -4,7 +4,6 @@ Real dataset from https://www.kaggle.com/harlfoxem/housesalesprediction
 @date: 23/05/2019
 @author: Quentin Lieumont
 """
-import math
 import numpy as np
 from matplotlib import pyplot as plt
 from useful.functions import get_json, write_json, history_plot, my_zip, std_err, average
@@ -14,7 +13,7 @@ import os
 from scipy.optimize import curve_fit
 
 
-#%%  Class Houses
+# %%  Class Houses
 
 
 class Houses:
@@ -34,7 +33,7 @@ class Houses:
         # self.raw_data = np.delete(self.raw_data, (7, 12), 1)
         self.norm_data: np.ndarray = np.transpose(np.array(
             [
-                (np.array(t)-min(t))/(max(t)-min(t))
+                (np.array(t) - min(t)) / (max(t) - min(t))
                 for t in np.transpose(self.raw_data).tolist()
             ]
         ))
@@ -91,7 +90,7 @@ class Houses:
         return self["long"]
 
 
-#%%  Class HouseLearner
+# %%  Class HouseLearner
 
 
 class HouseLearner(SimpleNetwork):
@@ -106,7 +105,89 @@ class HouseLearner(SimpleNetwork):
         )
 
 
-#%%  Main functions
+# %%  Regress abstract func
+
+
+def fit(func: callable, x: np.ndarray, y: np.ndarray) -> tuple:
+    param, pcov = curve_fit(func, x, y, maxfev=50000)
+
+    pred = func(x, *param)
+
+    R2 = 1 - np.var(pred - y) / np.var(y)
+
+    return R2, param
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+class Regress_func:
+    act: bool = True
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError('Abstract class')
+
+
+# %%  Regress func
+
+
+class deg0(Regress_func):
+    def __call__(self, x, a):
+        return a
+
+
+class deg1(Regress_func):
+    def __call__(self, x, a, b):
+        return a * x + b
+
+
+class deg2(Regress_func):
+    def __call__(self, x, a, b, c):
+        return a * x ** 2 + b * x + c
+
+
+class deg2_0(Regress_func):
+    def __call__(self, x, a, b, c):
+        return a * x ** 2 + b * x
+
+
+class deg3(Regress_func):
+    def __call__(self, x, a, b, c, d):
+        return a * x ** 3 + b * x ** 2 + c * x + d
+
+
+class inv(Regress_func):
+    def __call__(self, x, a, b, c, d):
+        return (a * x + b) / (c * x + d)
+
+
+class e(Regress_func):
+    def __call__(self, x, a, b, c, d):
+        return a * np.exp(b * x + c) + d
+
+
+class root(Regress_func):
+    def __call__(self, x, a, b):
+        return np.sqrt(a * x + b)
+
+
+class log(Regress_func):
+    def __call__(self, x, a, b):
+        return a * np.log(b * x)
+
+
+class sigm(Regress_func):
+    def __call__(self, x, a, b):
+        return a * sigmoid(b * x)
+
+
+class gaussian(Regress_func):
+    def __call__(self, x, mu, sig):
+        return np.exp(-((x - mu) / sig) ** 2 / 2)
+
+
+# %%  Main functions
 
 
 def build(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2/real/default"):
@@ -122,10 +203,10 @@ def build(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2/re
     else:
         raise FileExistsError(f"Path {save_folder} not found or not a directory !")
     for n in range(n_build):
-        print(f"Bluid number {n+1} over {n_build} :")
+        print(f"Bluid number {n + 1} over {n_build} :")
         h = Houses("learning_data/kc_house")
         net = HouseLearner(h, epochs=n_epochs)
-        _id = int(len(os.listdir(save_folder))/3)
+        _id = int(len(os.listdir(save_folder)) / 3)
         write_json(f"{save_folder}/val_loss{_id}.json", net.history['val_loss'])
         write_json(f"{save_folder}/loss{_id}.json", net.history['loss'])
         write_json(f"{save_folder}/weights{_id}.json", net.weights.tolist())
@@ -206,89 +287,136 @@ def weights_from_file(n: slice = -1, labels_link: str = None, folder: str = "dat
     return fig
 
 
-#%%  Regress abstract func
+# %%  Utility regression
 
 
-def fit(func, x, y):
-    param, pcov = curve_fit(func, x, y, maxfev=50000)
+def distance_data(h: Houses, i: int, min_dist: float = 0.0005) -> tuple:
+    """
+    Remove isolated points
 
-    pred = func(x, *param)
+    :param min_dist: minimum distance to an other point
+    :param h: Houses
+    :param i: test index
+    :return: var, price
+    :rtype: tuple
+    """
+    var = h(i)
+    prices = h(0)
+    data = [np.array(e) for e in np.transpose((var, prices)).tolist()]
+    data2 = []
 
-    R2 = 1 - np.var(pred - y)/np.var(y)
+    while data:
+        pop = False
+        k = 1
 
-    return R2, param
+        while k < len(data):
+            if (data[0] - data[k]) @ (data[0] - data[k]) <= min_dist:
+                data2.append(data.pop(k))
+                pop = True
+            else:
+                k += 1
 
+        if pop:
+            data2.append(data.pop(0))
+        else:
+            data.pop(0)
 
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-
-class Regress_func:
-    act: bool = True
-
-    def __call__(self, *args, **kwargs):
-        raise NotImplementedError('Abstract class')
-
-
-#%%  Regress func
-
-
-class deg0(Regress_func):
-    def __call__(self, x, a):
-        return a
-
-
-class deg1(Regress_func):
-    def __call__(self, x, a, b):
-        return a*x+b
-
-
-class deg2(Regress_func):
-    def __call__(self, x, a, b, c):
-        return a*x**2+b*x+c
+    return np.array([e[0] for e in data2]), np.array([e[1] for e in data2])
 
 
-class deg2_0(Regress_func):
-    def __call__(self, x, a, b, c):
-        return a*x**2+b*x
+def test_utility(var: np.ndarray, prices: np.ndarray, min_r2: float = 0.3) -> dict:
+    _max = {
+        "r2": 0.,
+        "f": None,
+        "params": None
+    }
+
+    for _f in [f for f in Regress_func.__subclasses__() if f.act is True]:
+        # noinspection PyBroadException
+        try:
+            r2, params = fit(_f(), var, prices)
+        except Exception:
+            pass
+        else:
+            if r2 > min_r2:
+                if r2 > _max["r2"]:
+                    _max["r2"] = r2
+                    _max["params"] = params
+                    _max["f"] = _f
+
+    return _max
 
 
-class deg3(Regress_func):
-    def __call__(self, x, a, b, c, d):
-        return a*x**3 + b*x**2 + c*x + d
+class _Utility:
+    def __init__(self, label: str, vals: np.ndarray, prices: np.ndarray, dico: dict):
+        self.vals = vals
+        self.prices = prices
+        self.label = label
+
+        def _f(x):
+            return dico["f"]()(x, *dico["params"])
+
+        self.func = _f
+        self.r2 = dico["r2"]
+        self.func_name = dico["f"].__name__
+
+    def __call__(self, x):
+        return self.func(x)
+
+    def plot(self) -> plt.Figure:
+        x = np.linspace(min(self.vals), max(self.vals))
+
+        fig, ax = plt.subplots()
+        ax.plot(self.vals, self.prices, '+')
+        ax.plot(x, self(x), '-', label=f"{self.func_name}, R2={str(self.r2)[:4]}")
+        ax.set_ylabel("Price")
+        ax.set_xlabel(self.label)
+        ax.legend()
+        return fig
 
 
-class inv(Regress_func):
-    def __call__(self, x, a, b, c, d):
-        return (a*x+b)/(c*x+d)
+class Utilities:
+    def __init__(self, h: Houses, quiet: bool = False):
+        self.utilities: list = []
+        self.h = h
+
+        li = list(range(len(h.norm_data[0])))[1:]
+        for i in li:
+            v, p = distance_data(h, i)
+            ret = test_utility(v, p)
+            lab = h.header_from_int[i]
+            if ret["r2"] != 0.:
+                if not quiet:
+                    print(f"For {lab}: Best function {ret['f'].__name__} with R2={ret['r2']}")
+                self.utilities.append(_Utility(lab, v, p, ret))
+            else:
+                if not quiet:
+                    print(f"No function found for {lab}")
+
+    def __len__(self):
+        return len(self.utilities)
+
+    def __getitem__(self, index: int):
+        return self.utilities[index]
+
+    def __iter__(self):
+        self.n = 0
+        return self
+
+    def __next__(self):
+        if self.n < len(self):
+            ret = self[self.n]
+            self.n += 1
+            return ret
+        else:
+            raise StopIteration
+
+    def show_plots(self):
+        for u in self:
+            u.plot().show()
 
 
-class e(Regress_func):
-    def __call__(self, x, a, b, c, d):
-        return a*np.exp(b*x+c)+d
-
-
-class root(Regress_func):
-    def __call__(self, x, a, b):
-        return np.sqrt(a*x+b)
-
-
-class log(Regress_func):
-    def __call__(self, x, a, b):
-        return a*np.log(b*x)
-
-
-class sigm(Regress_func):
-    def __call__(self, x, a, b):
-        return a*sigmoid(b*x)
-
-
-class gaussian(Regress_func):
-    def __call__(self, x, mu, sig):
-        return np.exp(-((x - mu)/sig)**2/2)
-
-
-#%%  Main
+# %%  Main
 
 
 if __name__ == "__main__":
@@ -309,70 +437,5 @@ if __name__ == "__main__":
     """
 
     h = Houses("learning_data/kc_house")
-    fs = {f.__name__: f() for f in Regress_func.__subclasses__() if f.act is True}
-
-    li = list(range(len(h.raw_data[0])))[1:]
-
-    min_dist = 0.0005
-
-    for i in li:
-        max_name: str = ""
-        max_r2: float = 0.
-        max_param = None
-        max_f = None
-
-        var = h(i)
-        prices = h(0)
-        data = [np.array(e) for e in np.transpose((var, prices)).tolist()]
-        data2 = []
-
-        while data:
-            pop = False
-            k = 1
-
-            while k < len(data):
-                if (data[0] - data[k]) @ (data[0] - data[k]) <= min_dist:
-                    data2.append(data.pop(k))
-                    pop = True
-                else:
-                    k += 1
-
-            if pop:
-                data2.append(data.pop(0))
-            else:
-                data.pop(0)
-
-        var = np.array([e[0] for e in data2])
-        prices = np.array([e[1] for e in data2])
-
-
-        for name, f in fs.items():
-            # print(h[i].size, '/', h[j].size)
-            try:
-                r2, vals = fit(f, var, prices)
-            except RuntimeWarning:
-                pass
-            except RuntimeError as e:
-                # print(name, ': Error:', e)
-                pass
-            else:
-                if r2 > 0.3:
-                    if r2 > max_r2:
-                        max_r2 = r2
-                        max_name = name
-                        max_param = vals
-                        max_f = f
-
-        if max_r2 != 0.:
-            print(f"For {h.header_from_int[i]}: Best function {max_name} with R2={max_r2}")
-            x = np.linspace(min(var), max(var))
-
-            fig, ax = plt.subplots()
-            ax.plot(var, prices, '+')
-            ax.plot(x, max_f(x, *max_param), '-', label=f"{max_name}, R2={str(max_r2)[:4]}")
-            ax.set_ylabel("Price")
-            ax.set_xlabel(h.header_from_int[i])
-            leg: plt.legend = ax.legend()
-            fig.show()
-        else:
-            print(f"No function found for {h.header_from_int[i]}")
+    u = Utilities(h)
+    u.show_plots()
