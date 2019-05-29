@@ -313,13 +313,12 @@ class Utilities:
 
     @property
     def data(self) -> Data:
-        t = np.array([
-            np.array([
-                u(e)
-                for e in self.h(u.label)
-            ])
-            for u in self
-        ])
+        t = np.transpose(
+            [
+                u(self.h.norm_data[:, self.h.header_from_str[self.h.header_from_int[i]]])
+                for i, u in enumerate(self)
+            ]
+        )
         return Data(
             tab=t,
             expected=self.h("price")
