@@ -1,0 +1,10 @@
+[
+  "id",
+  "date",
+  "price",
+  "bathrooms",
+  "sqft_living",
+  "grade",
+  "sqft_above",
+  "sqft_living15"
+]

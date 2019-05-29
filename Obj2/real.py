@@ -316,7 +316,7 @@ class Utilities:
         t = np.array([
             np.array([
                 u(e)
-                for e in h(u.label)
+                for e in self.h(u.label)
             ])
             for u in self
         ])
@@ -392,7 +392,7 @@ def build_ut(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2
         write_json(f"{save_folder}/weights{_id}.json", net.weights.tolist())
 
 
-def history_from_file(n: int = -1, folder: str = "data/Obj2/real/default") -> plt.Figure:
+def history_from_file(n: slice = -1, folder: str = "data/Obj2/real/default") -> plt.Figure:
     """
     Plot form data/Obj2/real/...n.json
     :param folder: folder with lossXX.json file
@@ -474,19 +474,13 @@ if __name__ == "__main__":
     link = "https://www.kaggle.com/harlfoxem/housesalesprediction"
     print(f"Data from {link}.")
 
-    """
-    s = slice(6, None)
+    s = slice(None)
     history_from_file(
-        folder="data/Obj2/real/default",
+        folder="data/Obj2/real/ut1",
         n=s
     ).show()
     weights_from_file(
-        folder="data/Obj2/real/default",
+        folder="data/Obj2/real/ut1",
         n=s,
         labels_link="learning_data/kc_house/header_remove1.json"
     ).show()
-    """
-
-    h = Houses("learning_data/kc_house")
-    u = Utilities(h)
-    u.show_plots()
