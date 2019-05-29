@@ -37,6 +37,7 @@ class Houses:
                 (np.array(t)-min(t))/(max(t)-min(t))
                 for t in np.transpose(self.raw_data).tolist()
             ]
+        ))
 
     def __getitem__(self, item):
         if type(item) is str:
@@ -344,8 +345,6 @@ if __name__ == "__main__":
         var = np.array([e[0] for e in data2])
         prices = np.array([e[1] for e in data2])
 
-        fig, ax = plt.subplots()
-        ax.plot(var, prices, '+')
 
         for name, f in fs.items():
             # print(h[i].size, '/', h[j].size)
@@ -363,11 +362,13 @@ if __name__ == "__main__":
                         max_name = name
                         max_param = vals
                         max_f = f
-                    # print(f"{h.header_from_int[0]} | {h.header_from_int[i]} | {name} | {r2}")
 
         if max_r2 != 0.:
             print(f"For {h.header_from_int[i]}: Best function {max_name} with R2={max_r2}")
             x = np.linspace(min(var), max(var))
+
+            fig, ax = plt.subplots()
+            ax.plot(var, prices, '+')
             ax.plot(x, max_f(x, *max_param), '-', label=f"{max_name}, R2={str(max_r2)[:4]}")
             ax.set_ylabel("Price")
             ax.set_xlabel(h.header_from_int[i])
