@@ -481,5 +481,5 @@ if __name__ == "__main__":
     weights_from_file(
         folder="data/Obj2/real/ut1",
         n=s,
-        labels_link="learning_data/kc_house/header_remove1.json"
+        labels_link="learning_data/kc_house/header_ut1.json"
     ).show()
