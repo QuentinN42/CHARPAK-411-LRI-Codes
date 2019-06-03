@@ -324,6 +324,24 @@ class Utilities:
             expected=self.h("price")
         )
 
+    @property
+    def choquet_data(self) -> Data:
+        def _vals(i) -> np.ndarray:
+            return self.h.norm_data[:, self.h.header_from_str[self.h.header_from_int[i]]]
+
+        def _app(f, t1, t2):
+            return np.array(list(map(f, np.transpose((t1, t2)))))
+
+        t = [u(_vals(i)) for i, u in enumerate(self)]
+        t_min = [_app(min, _vals(i), _vals(j)) for i in range(len(self)) for j in range(len(self))]
+        t_max = [_app(max, _vals(i), _vals(j)) for i in range(len(self)) for j in range(len(self))]
+
+        d = np.transpose(t + t_min + t_max)
+        return Data(
+            tab=d,
+            expected=self.h("price")
+        )
+
     def show_plots(self):
         for u in self:
             u.plot().show()
@@ -339,6 +357,19 @@ class HouseLearnerFromUtilities(SimpleNetwork):
             epochs=epochs,
             quiet=q
         )
+
+
+class HouseLearnerChoquetFromUtilities(SimpleNetwork):
+    def __init__(self, utilities: Utilities, epochs: int = 10, q: bool = True):
+        self.utilities = utilities
+        d: Data = self.utilities.choquet_data
+        super().__init__(
+            data=d,
+            n_dim=d.n_dim,
+            epochs=epochs,
+            quiet=q
+        )
+
 
 # %%  Main functions
 
@@ -385,6 +416,32 @@ def build_ut(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2
     for n in range(n_build):
         print(f"Bluid number {n + 1} over {n_build} :")
         net = HouseLearnerFromUtilities(ut, epochs=n_epochs)
+        _id = int(len(os.listdir(save_folder)) / 3)
+        write_json(f"{save_folder}/val_loss{_id}.json", net.history['val_loss'])
+        write_json(f"{save_folder}/loss{_id}.json", net.history['loss'])
+        write_json(f"{save_folder}/weights{_id}.json", net.weights.tolist())
+
+
+def build_ut_ch(n_epochs: int = 10, n_build: int = 1, save_folder: str = "data/Obj2/real/default"):
+    """
+    Build and save learning
+    :param n_epochs:
+    :param n_build:
+    :param save_folder: folder to save the file
+    :return:
+    """
+    if os.path.isdir(save_folder):
+        print(f"Ready to save {n_build} files in {save_folder}")
+    else:
+        raise FileExistsError(f"Path {save_folder} not found or not a directory !")
+
+    print("Building utilities")
+    ut = Utilities(Houses("learning_data/kc_house"))
+    print("Utilities built")
+
+    for n in range(n_build):
+        print(f"Bluid number {n + 1} over {n_build} :")
+        net = HouseLearnerChoquetFromUtilities(ut, epochs=n_epochs)
         _id = int(len(os.listdir(save_folder)) / 3)
         write_json(f"{save_folder}/val_loss{_id}.json", net.history['val_loss'])
         write_json(f"{save_folder}/loss{_id}.json", net.history['loss'])
@@ -473,13 +530,15 @@ if __name__ == "__main__":
     link = "https://www.kaggle.com/harlfoxem/housesalesprediction"
     print(f"Data from {link}.")
 
+    ln = "data/Obj2/real/ut2"
     s = slice(None)
+
     history_from_file(
-        folder="data/Obj2/real/ut1",
+        folder=ln,
         n=s
     ).show()
     weights_from_file(
-        folder="data/Obj2/real/ut1",
+        folder=ln,
         n=s,
         labels_link="learning_data/kc_house/header_ut1.json"
     ).show()
