@@ -367,7 +367,8 @@ class HouseLearnerChoquetFromUtilities(SimpleNetwork):
             data=d,
             n_dim=d.n_dim,
             epochs=epochs,
-            quiet=q
+            quiet=q,
+            allow_neg=False
         )
 
 
@@ -530,7 +531,7 @@ if __name__ == "__main__":
     link = "https://www.kaggle.com/harlfoxem/housesalesprediction"
     print(f"Data from {link}.")
 
-    ln = "data/Obj2/real/ut2"
+    ln = "data/Obj2/real/utch1"
     s = slice(None)
 
     history_from_file(
@@ -540,5 +541,5 @@ if __name__ == "__main__":
     weights_from_file(
         folder=ln,
         n=s,
-        labels_link="learning_data/kc_house/header_ut1.json"
+        # labels_link="learning_data/kc_house/header_ut1.json"
     ).show()

@@ -1,5 +1,5 @@
-from Obj2.real import build_ut
+from Obj2.real import build_ut_ch
 
 
 if __name__ == "__main__":
-    build_ut(save_folder="data/Obj2/real/ut2", n_epochs=100, n_build=25)
+    build_ut_ch(save_folder="data/Obj2/real/utch1", n_epochs=100, n_build=25)
