@@ -29,7 +29,7 @@ class Houses:
                 self.raw_data[i, self.header_from_str["yr_renovated"]] = \
                     self.raw_data[i, self.header_from_str["yr_built"]]
 
-        # self.raw_data = self.raw_data[:, :-5]
+        self.raw_data = self.raw_data[:, :-5]
         # self.raw_data = np.delete(self.raw_data, (7, 12), 1)
         self.norm_data: np.ndarray = np.transpose(np.array(
             [
