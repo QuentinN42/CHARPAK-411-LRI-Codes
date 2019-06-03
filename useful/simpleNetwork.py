@@ -64,8 +64,7 @@ class SimpleNetwork(Network):
                     activation=activation,
                     input_dim=self.n_dim,
                     use_bias=use_bias,
-                    W_constraint=constraints.NonNeg(),
-                    kernel_constraint=constraints.max_norm(max_norm),
+                    W_constraint=constraints.MinMaxNorm(min_value=0.0, max_value=max_norm),
                 )
             )
         if loss_func:
