@@ -531,7 +531,7 @@ if __name__ == "__main__":
     link = "https://www.kaggle.com/harlfoxem/housesalesprediction"
     print(f"Data from {link}.")
 
-    ln = "data/Obj2/real/utch1"
+    ln = "data/Obj2/real/utch2"
     s = slice(None)
 
     history_from_file(
