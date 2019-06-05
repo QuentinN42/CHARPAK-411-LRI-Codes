@@ -333,8 +333,8 @@ class Utilities:
             return np.array(list(map(f, np.transpose((t1, t2)))))
 
         t = [u(_vals(i)) for i, u in enumerate(self)]
-        t_min = [_app(min, _vals(i), _vals(j)) for i in range(len(self)) for j in range(len(self)) if j != i]
-        t_max = [_app(max, _vals(i), _vals(j)) for i in range(len(self)) for j in range(len(self)) if j != i]
+        t_min = [_app(min, _vals(i), _vals(j)) for i in range(len(self)) for j in range(len(self)) if j < i]
+        t_max = [_app(max, _vals(i), _vals(j)) for i in range(len(self)) for j in range(len(self)) if j < i]
 
         d = np.transpose(t + t_min + t_max)
         return Data(
@@ -531,7 +531,7 @@ if __name__ == "__main__":
     link = "https://www.kaggle.com/harlfoxem/housesalesprediction"
     print(f"Data from {link}.")
 
-    ln = "data/Obj2/real/utch2"
+    ln = "data/Obj2/real/utch3"
     s = slice(None)
 
     history_from_file(
@@ -541,5 +541,5 @@ if __name__ == "__main__":
     weights_from_file(
         folder=ln,
         n=s,
-        labels_link="learning_data/kc_house/header_utch1.json"
+        labels_link="learning_data/kc_house/header_utch3.json"
     ).show()
