@@ -144,7 +144,7 @@ def plot_color(
     """
     fig, ax = plt.subplots()
     im = ax.imshow(z)
-    ax.plot([len(z) - 0.5, -0.5], [-0.5, len(z) - 0.5], "-k")
+    # ax.plot([len(z) - 0.5, -0.5], [-0.5, len(z) - 0.5], "-k")
     if plot_title is not "":
         ax.title._text = plot_title
     fig.tight_layout()
